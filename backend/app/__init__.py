@@ -12,7 +12,7 @@ def create_app():
 
     with app.app_context():
         # Import routes to register them
-        from . import routes
+        from app import routes
         # Create the tables in the database
         db.create_all()
 
