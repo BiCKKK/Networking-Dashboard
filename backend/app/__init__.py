@@ -1,6 +1,6 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from config import DevConfig
+from .config import DevConfig
 from flask_cors import CORS
 from flask_migrate import Migrate
 
