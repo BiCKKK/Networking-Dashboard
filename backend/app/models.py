@@ -1,4 +1,4 @@
-from app import db
+from . import db
 
 class NetworkTopology(db.Model):
     __tablename__ = 'network_topology'
