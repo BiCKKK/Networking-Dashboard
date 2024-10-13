@@ -4,11 +4,12 @@ from dotenv import load_dotenv
 # Load environment variables from .env file
 load_dotenv()
 
-class Config:
+class Config(object):
     """Base configuration with default settings."""
-    SECRET_KEY = os.getenv('SECRET_KEY', 'default_secret_key')  # Fallback for development
+    SECRET_KEY = os.getenv('SECRET_KEY', 'mysecretkey')  # Fallback for development
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_DATABASE_URI = os.getenv('DEV_DATABASE_URI')  # Database URI for development environment
+    CORS_HEADERS = 'Content-Type'
 
 class DevConfig(Config):
     """Development-specific configuration."""
