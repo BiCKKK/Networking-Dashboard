@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, send_from_directory
 from .models import (
     NetworkTopology, TrafficFlow, DNSLog, RemoteAccessLog, SSLLog,
     FileIntegrityLog, SyslogEvent, AttackEvents, IDSAlerts,
@@ -7,6 +7,7 @@ from .models import (
 from . import db
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
+import os
 
 # Define the Blueprint
 main = Blueprint('main', __name__)
@@ -451,3 +452,9 @@ def add_user_session():
         if "foreign key constraint" in str(e).lower():
             return jsonify({"error": "User ID does not exist in the users table."}), 400
         return jsonify({"error": f"Database error: {str(e)}"}), 500 
+    
+
+@main.route('/favicon.ico')
+def favicon():
+    return send_from_directory(os.path.join(main.root_path, 'static'),
+                               'favicon.ico', mimetype='image/vnd.microsoft.icon')
