@@ -8,7 +8,7 @@ class Config(object):
     """Base configuration with default settings."""
     SECRET_KEY = os.getenv('SECRET_KEY', 'mysecretkey')  # Fallback for development
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    SQLALCHEMY_DATABASE_URI = os.getenv('DEV_DATABASE_URI')  # Database URI for development environment
+    SQLALCHEMY_DATABASE_URI = os.getenv('DEV_DATABASE_URI', 'sqlite:///data.db')  # Database URI or Fallback to SQLite
     CORS_HEADERS = 'Content-Type'
 
 class DevConfig(Config):
