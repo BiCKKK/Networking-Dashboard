@@ -40,7 +40,7 @@ class TrafficFlow(db.Model):
     ids_alerts = db.relationship('IDSAlerts', backref='traffic_flow', lazy=True, cascade='all, delete-orphan')
     
     # Relationship to AnomalyDetection
-    anomalies = db.relationship('AnomalyDetection', backref='traffic_flow', lazy=True, cascade='all, delete-orphan')
+    anomaly_detection = db.relationship('AnomalyDetection', backref='traffic_flow', lazy=True, cascade='all, delete-orphan')
 
     def serialize(self):
         return {
