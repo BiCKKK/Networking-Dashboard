@@ -166,12 +166,14 @@ class Users(db.Model):
     
     def __repr__(self):
         return f"<User {self.username}>"
-
+    
+    # Relationship to IDSAlerts
+    user_sessions = db.relationship('UserSessions', backref='users', lazy=True, cascade='all, delete-orphan')
 
 class UserSessions(db.Model):
     __tablename__ = 'user_sessions'
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'))
     login_time = db.Column(db.DateTime)
     logout_time = db.Column(db.DateTime)
 

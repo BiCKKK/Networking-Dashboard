@@ -1,8 +1,8 @@
-"""Initial migration
+"""Create initial database schema
 
-Revision ID: 0de1d1b8325f
+Revision ID: a839e2472e76
 Revises: 
-Create Date: 2024-10-13 17:34:06.647485
+Create Date: 2024-10-14 13:34:50.673451
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '0de1d1b8325f'
+revision = 'a839e2472e76'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -120,7 +120,7 @@ def upgrade():
     sa.Column('description', sa.String(length=200), nullable=True),
     sa.Column('related_flow', sa.Integer(), nullable=True),
     sa.Column('timestamp', sa.DateTime(), nullable=True),
-    sa.ForeignKeyConstraint(['related_flow'], ['traffic_flow.id'], ),
+    sa.ForeignKeyConstraint(['related_flow'], ['traffic_flow.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('ids_alerts',
@@ -129,7 +129,7 @@ def upgrade():
     sa.Column('severity', sa.String(length=10), nullable=True),
     sa.Column('related_attack', sa.Integer(), nullable=True),
     sa.Column('timestamp', sa.DateTime(), nullable=True),
-    sa.ForeignKeyConstraint(['related_attack'], ['traffic_flow.id'], ),
+    sa.ForeignKeyConstraint(['related_attack'], ['traffic_flow.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('user_sessions',
