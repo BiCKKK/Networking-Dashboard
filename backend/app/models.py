@@ -36,7 +36,12 @@ class TrafficFlow(db.Model):
     flow_status = db.Column(db.String(20))
     # timestamp = db.Column(db.DateTime, default=func.now())
     
-    ids_alerts = db.relationship('IDSAlerts', backref='traffic_flow', lazy=True)
+    # Relationship to IDSAlerts
+    ids_alerts = db.relationship('IDSAlerts', backref='traffic_flow', lazy=True, cascade='all, delete-orphan')
+    
+    # Relationship to AnomalyDetection
+    anomalies = db.relationship('AnomalyDetection', backref='traffic_flow', lazy=True, cascade='all, delete-orphan')
+
     def serialize(self):
         return {
             'id': self.id,
@@ -106,7 +111,7 @@ class IDSAlerts(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     alert_message = db.Column(db.String(200), nullable=False)
     severity = db.Column(db.String(10))
-    related_attack = db.Column(db.Integer, db.ForeignKey('traffic_flow.id'))
+    related_attack = db.Column(db.Integer, db.ForeignKey('traffic_flow.id', ondelete='CASCADE'))  # Foreign key with cascading delete
     timestamp = db.Column(db.DateTime)
 
     def serialize(self):
@@ -127,7 +132,7 @@ class AnomalyDetection(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     anomaly_type = db.Column(db.String(50), nullable=False)
     description = db.Column(db.String(200))
-    related_flow = db.Column(db.Integer, db.ForeignKey('traffic_flow.id'))
+    related_flow = db.Column(db.Integer, db.ForeignKey('traffic_flow.id', ondelete='CASCADE'))  # Foreign key with cascading delete
     timestamp = db.Column(db.DateTime)
 
     def serialize(self):
