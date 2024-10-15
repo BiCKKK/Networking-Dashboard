@@ -40,3 +40,32 @@
 .read-the-docs {
   color: #888;
 }
+
+.App {
+  display: flex;
+  flex-direction: column;
+  height: 100vh
+}
+
+.header {
+  background-color: #333;
+  columns: #fff;
+  padding: 10px;
+  text-align: center;
+}
+
+.main-content {
+  display: flex;
+  flex: 1;
+}
+
+.sidebar {
+  background-color: #f4f4f4;
+  width: 200px;
+  padding: 15px;
+}
+
+.content {
+  flex: 1;
+  padding: 20px;
+}
