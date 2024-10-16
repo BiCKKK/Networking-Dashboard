@@ -1,12 +1,20 @@
 import React from "react";   
-import './Footer.css'
+import { Box, Typography } from "@mui/material";
 
-const Footer = () => {  
-  return (  
-    <footer className="footer">  
-      <p>© 2024 Networking Dashboard. All rights reserved.</p>  
-    </footer>  
-  );  
-};  
+const Footer = () => (
+  <Box
+    component="footer"
+    sx={{
+      py: 2,
+      textAlign: 'center',
+      mt: 'auto',
+      backgroundColor: 'f0f0f0',
+    }}
+  >
+    <Typography variant="body2" color="textSecondary">
+      2024 Networking Dashboard, work in progress!
+    </Typography>
+  </Box>
+);   
 
 export default Footer; 
