@@ -3,9 +3,9 @@
     display: flex; 
     justify-content: center; 
     align-items: center; 
-    height: 60px; 
-    background: linear-gradient(135deg, #007bff, #6610f2); 
-    background-color: #007bff; /* Change this to any preferred color */ 
+    height: 45px; 
+    background: linear-gradient(135deg, #cd6617, #6610f2); 
+    background-color: #cd6617; /* Change this to any preferred color */ 
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); 
 } 
   

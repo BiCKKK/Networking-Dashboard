@@ -1,11 +1,19 @@
 import React from "react";
+import { AppBar, Toolbar, IconButton, Typography } from "@mui/material";
+import { Menu as MenuIcon } from "@mui/icons-material";
 import './Header.css';
 
-const Header = () => {
+const Header = ({toggleSidebar}) => {
     return (
-        <header className="header"> 
-        <h1 className="header-title">Network Dashboard</h1> 
-    </header> 
+        <AppBar position="fixed" className="header">
+            <Toolbar>
+                <IconButton edge="start" color="inherit" onClick={toggleSidebar}>
+                    <Typography variant="h6" noWrap>
+                        Network Monitoring Dashboard
+                    </Typography>
+                </IconButton>
+            </Toolbar>
+        </AppBar>
     );
 }
 
