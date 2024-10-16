@@ -1,0 +1,21 @@
+/* Header styles */ 
+.header { 
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    height: 60px; 
+    background: linear-gradient(135deg, #007bff, #6610f2); 
+    background-color: #007bff; /* Change this to any preferred color */ 
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); 
+} 
+  
+/* Header title styles */ 
+.header-title { 
+    font-size: 1.0rem; /* Decrease font size */ 
+    color: #fff; /* White color for contrast */ 
+    font-family: 'Arial', sans-serif; /* Choose a modern font */ 
+    text-transform: uppercase; /* Optional: make it uppercase */ 
+    letter-spacing: 1.5px; /* Add some spacing for readability */ 
+    margin: 0; 
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.4); /* Add subtle shadow effect */ 
+} 
