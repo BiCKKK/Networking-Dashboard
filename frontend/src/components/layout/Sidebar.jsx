@@ -8,47 +8,41 @@ import SecurityIcon from "@mui/icons-material/Security";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 
-const Sidebar = ({}) => {
-    const [isOpen, setIsOpen] = useState(false);
-
-    const toggleDrawer = () => {
-        setIsOpen(!isOpen);
-    };
-
+const Sidebar = ({ open, onClose}) => {
     const menuItems = [
-        { test: 'Network Overview', icon: <NetworkCheckIcon /> },
-        { test: 'Traffic Analysis', icon: <TrafficIcon /> },
-        { test: 'Packet Inspection', icon: <BugReportIcon /> },
-        { test: 'Logs', icon: <DescriptionIcon /> },
-        { test: 'Intrusion Detection', icon: <SecurityIcon /> },
-    ]
+        { text: 'Network Overview', icon: <NetworkCheckIcon /> },
+        { text: 'Traffic Analysis', icon: <TrafficIcon /> },
+        { text: 'Packet Inspection', icon: <BugReportIcon /> },
+        { text: 'Logs', icon: <DescriptionIcon /> },
+        { text: 'Intrusion Detection', icon: <SecurityIcon /> },
+    ];
     return (
         <Drawer
             variant="permanent"
             anchor="left"
-            open={isOpen}
+            open={open}
             sx={{
-                width: isOpen ? 240 : 60,
+                width: open ? 240 : 60,
                 flexShrink: 0,
                 '& .MuiDrawer-paper': {
-                    width: isOpen ? 240 : 60,
-                    transition: 'width 0.3s',
+                    width: open ? 240 : 60,
+                    transition: 'none',
                     overflowX: 'hidden',
                     top: '64px',
+                    ml: 1.8,
+                    mr: 1.8,
                 },
             }}
         >
-            <div>
-                <IconButton onClick={toggleDrawer}>
-                    {isOpen ? <ChevronLeftIcon /> : <ChevronRightIcon />}
-                </IconButton>
-            </div>
-            <Divider />
             <List>
-                {menuItems.map((item, index) => (
-                    <ListItem button key={item.text}>
+                {menuItems.map((item) => (
+                    <ListItem 
+                        button 
+                        key={item.text} 
+                        onClick={onClose}
+                        sx={{cursor: 'pointer'}}>
                         <ListItemIcon>{item.icon}</ListItemIcon>
-                        {isOpen && <ListItemText primary={item.text} />}
+                        {open && <ListItemText primary={item.text} />}
                     </ListItem>
                 ))}
             </List>

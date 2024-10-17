@@ -7,14 +7,14 @@ import logo from "../../assets/logo.png";
 
 const Header = ({ onMenuClick }) => {
     return (
-        <AppBar position="fixed" sx={{ backgroundColor: '#212121' }}>
+        <AppBar position="fixed" sx={{ backgroundColor: '#212121', zIndex: (theme) => theme.zIndex.drawer + 1 }}>
             <Toolbar>
                 <IconButton
                     edge="start"
                     color="inherit"
                     aria-label="menu"
                     onClick={onMenuClick}
-                    sx={{ mr: 1, ml: 1 }}
+                    sx={{ mr: 0, ml: 0 }}
                 >
                     <MenuIcon />    
                 </IconButton>
@@ -22,7 +22,7 @@ const Header = ({ onMenuClick }) => {
                     component="img"
                     src={logo}
                     alt="SGFabric Logo"
-                    sx={{ height: 60, width: 120, ml: 3, alignSelf: 'center' }}
+                    sx={{ height: 60, width: 120, ml: 4, mr: 2, verticalAlign: 'middle' }}
                 />
                 <TextField 
                     variant="outlined"
