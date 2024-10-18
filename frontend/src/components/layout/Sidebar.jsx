@@ -1,12 +1,10 @@
 import React, { useState } from "react";
-import { Divider, Drawer, IconButton, List, ListItem, ListItemIcon, ListItemText } from "@mui/material";
+import { Drawer, List, ListItem, ListItemIcon, ListItemText } from "@mui/material";
 import NetworkCheckIcon from "@mui/icons-material/NetworkCheck";
 import TrafficIcon from "@mui/icons-material/Traffic";
 import BugReportIcon from "@mui/icons-material/BugReport";
 import DescriptionIcon from "@mui/icons-material/Description";
 import SecurityIcon from "@mui/icons-material/Security";
-import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
-import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 
 const Sidebar = ({ open, onClose}) => {
     const menuItems = [

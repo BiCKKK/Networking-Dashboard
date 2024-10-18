@@ -16,7 +16,7 @@ const MainLayout = ({ children }) => {
             <Sidebar open={sidebarOpen} onClose={toggleSidebar} />
             <Box
                 component="main"
-                sx={{ flexGrow: 1, p:3, marginTop: '64px', width: '100%' }}    
+                sx={{ flexGrow: 1, p:3, marginTop: '64px', width: `calc(100% - ${sidebarOpen ? '240px' : '60px'})` }}    
             >
                 <Toolbar />
                 {children}
