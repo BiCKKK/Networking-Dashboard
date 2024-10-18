@@ -11,7 +11,7 @@ const MainLayout = ({ children }) => {
     };
 
     return (
-        <Box sx={{ display: "flex"}}>
+        <Box sx={{ display: "flex", width: '100%' }}>
             <Header onMenuClick={toggleSidebar} />
             <Sidebar open={sidebarOpen} onClose={toggleSidebar} />
             <Box
