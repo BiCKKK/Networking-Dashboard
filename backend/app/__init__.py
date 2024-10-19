@@ -3,10 +3,11 @@ from flask_sqlalchemy import SQLAlchemy
 from .config import DevConfig
 from flask_cors import CORS
 from flask_migrate import Migrate
-import logging
+from flask_socketio import SocketIO
 
 db = SQLAlchemy()
 migrate = Migrate()
+socketio = SocketIO()
 
 def create_app(config_class=DevConfig):
     app = Flask(__name__)
@@ -15,10 +16,9 @@ def create_app(config_class=DevConfig):
     db.init_app(app)
     migrate.init_app(app, db)
 
-    CORS(app)
+    socketio.init_app(app, cors_allowed_origins="http://localhost:5173")
 
-    logging.getLogger(__name__).info("Flask application instance created with configuration: %s", 
-                                     config_class.__name__)
+    CORS(app, resources={r"/*": {"origins": "*"}})
 
     # Register Blueprints
     from .routes import main

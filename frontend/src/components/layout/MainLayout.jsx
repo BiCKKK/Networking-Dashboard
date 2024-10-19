@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import Header from "./Header";
 import Sidebar from "./Sidebar";
 import { Box, Toolbar } from "@mui/material";
+import AttackSimulatorButton from "../common/AttackSimulatorButton";
 
 const MainLayout = ({ children }) => {
     const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -21,6 +22,9 @@ const MainLayout = ({ children }) => {
                 <Toolbar />
                 {children}
             </Box>
+            
+            <AttackSimulatorButton />
+            
         </Box>
     );
 };

@@ -39,13 +39,18 @@ const Sidebar = ({ open, onClose}) => {
                         to={item.path}
                         key={item.text}
                         style={{ textDecoration: 'none', color: 'inherit' }}
-                        onClick={onClose}
                     >
                         <ListItem 
-                        button 
-                        sx={{cursor: 'pointer'}}>
-                        <ListItemIcon>{item.icon}</ListItemIcon>
-                        {open && <ListItemText primary={item.text} />}
+                            button 
+                            sx={{cursor: 'pointer'}}
+                            onClick={() => {
+                                if (open) {
+                                    onClose();
+                                }
+                            }}
+                        >
+                            <ListItemIcon>{item.icon}</ListItemIcon>
+                            {open && <ListItemText primary={item.text} />}
                         </ListItem>
                     </NavLink>
                 ))}
