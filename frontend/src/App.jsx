@@ -5,7 +5,7 @@ import NetworkOverview from "./pages/NetworkOverview";
 import TrafficAnalysis from "./pages/TrafficAnalysis";
 import PacketInspection from "./pages/PacketInspection";
 import Logs from "./pages/Logs";
-// import IntrusionDetection from "./pages/IntrusionDetection";
+import IntrusionDetection from "./pages/IntrusionDetection";
 
 const App = () => {
   return (
@@ -16,7 +16,7 @@ const App = () => {
           <Route path="/traffic-analysis" element={<TrafficAnalysis />} />
           <Route path="/packet-inspection" element={<PacketInspection />} />
           <Route path="/logs" element={<Logs />} />
-          {/* <Route path="/intrusion-detection" element={<IntrusionDetection />} />  */}
+          <Route path="/intrusion-detection" element={<IntrusionDetection />} /> 
         </Routes>
       </MainLayout>
     </Router> 

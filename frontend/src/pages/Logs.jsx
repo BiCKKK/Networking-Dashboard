@@ -1,231 +1,167 @@
-// import React, { useState } from 'react'; 
-// import { Box, Grid, Paper, Typography, TextField, Button, Select, MenuItem, FormControl, InputLabel, Divider } from '@mui/material'; 
-// import { DataGrid } from '@mui/x-data-grid'; 
-
-// const Logs = () => { 
-//     // Example log data (this will be replaced by fetched data later) 
-//     const [logs, setLogs] = useState([ 
-//         { id: 1, timestamp: '2024-10-18 12:00:01', type: 'Syslog', source: '192.168.1.1', severity: 'INFO', message: 'System rebooted' }, 
-//         { id: 2, timestamp: '2024-10-18 12:05:34', type: 'DNS', source: '192.168.1.2', severity: 'WARN', message: 'DNS query failed' }, 
-//         { id: 3, timestamp: '2024-10-18 12:10:45', type: 'Authentication', source: '192.168.1.3', severity: 'ERROR', message: 'Failed login attempt' }, 
-//         // Add more dummy data here 
-//     ]); 
-
-//     // Columns for the DataGrid 
-//     const columns = [ 
-//         { field: 'timestamp', headerName: 'Timestamp', flex: 1 }, 
-//         { field: 'type', headerName: 'Log Type', flex: 1 }, 
-//         { field: 'source', headerName: 'Source', flex: 1 }, 
-//         { field: 'severity', headerName: 'Severity', flex: 1 }, 
-//         { field: 'message', headerName: 'Message', flex: 2 }, 
-//     ]; 
-
-//     return ( 
-//         <Box sx={{ p: 3 }}> 
-//             {/* Filter Section */} 
-//             <Paper elevation={3} sx={{ p: 2, mb: 3 }}> 
-//                 <Typography variant="h6">Log Filters</Typography> 
-//                 <Grid container spacing={2} sx={{ mt: 2 }}>
-//                     <Grid item xs={12} sm={6} md={3}> 
-//                         <TextField fullWidth label="Source IP" variant="outlined" /> 
-//                     </Grid> 
-//                     <Grid item xs={12} sm={6} md={3}> 
-//                         <TextField fullWidth label="Log Type" variant="outlined" /> 
-//                     </Grid> 
-//                     <Grid item xs={12} sm={6} md={3}> 
-//                         <FormControl fullWidth variant="outlined"> 
-//                             <InputLabel>Severity</InputLabel> 
-//                             <Select label="Severity"> 
-//                                 <MenuItem value="INFO">INFO</MenuItem> 
-//                                 <MenuItem value="WARN">WARN</MenuItem> 
-//                                 <MenuItem value="ERROR">ERROR</MenuItem> 
-//                                 <MenuItem value="CRITICAL">CRITICAL</MenuItem> 
-//                             </Select> 
-//                         </FormControl> 
-//                     </Grid> 
-//                     <Grid item xs={12} sm={6} md={3}> 
-//                         <Button variant="contained" color="primary" fullWidth sx={{ mt: 1 }}>Apply Filters</Button> 
-//                     </Grid> 
-//                     <Grid item xs={12} sm={6} md={3}> 
-//                         <Button variant="outlined" color="secondary" fullWidth sx={{ mt: 1 }}>Clear Filters</Button> 
-//                     </Grid> 
-//                 </Grid> 
-//             </Paper> 
-
-//             {/* Log Aggregation Summary */} 
-//             <Paper elevation={3} sx={{ p: 2, mb: 3 }}> 
-//                 <Typography variant="h6" sx={{ mb: 2 }}>Log Summary</Typography> 
-//                 <Grid container spacing={2}> 
-//                     <Grid item xs={12} sm={6} md={3}> 
-//                         <Typography variant="body1">Total Logs: {logs.length}</Typography> 
-//                     </Grid> 
-//                     <Grid item xs={12} sm={6} md={3}> 
-//                         <Typography variant="body1">INFO Logs: {logs.filter(log => log.severity === 'INFO').length}</Typography> 
-//                     </Grid> 
-//                     <Grid item xs={12} sm={6} md={3}> 
-//                         <Typography variant="body1">WARN Logs: {logs.filter(log => log.severity === 'WARN').length}</Typography> 
-//                     </Grid> 
-//                     <Grid item xs={12} sm={6} md={3}> 
-//                         <Typography variant="body1">ERROR Logs: {logs.filter(log => log.severity === 'ERROR').length}</Typography> 
-//                     </Grid> 
-//                 </Grid> 
-//             </Paper> 
-
-//             {/* Logs DataGrid */} 
-//             <Paper elevation={3} sx={{ p: 2, mb: 3, height: 400 }}> 
-//                 <Typography variant="h6" sx={{ mb: 2 }}>Captured Logs</Typography> 
-//                 <DataGrid 
-//                     rows={logs} 
-//                     columns={columns} 
-//                     pageSize={5} 
-//                     rowsPerPageOptions={[5, 10, 25]} 
-//                     checkboxSelection 
-//                     disableSelectionOnClick 
-//                 /> 
-//             </Paper> 
-
-//             {/* Log Details Pane */} 
-//             <Paper elevation={3} sx={{ p: 2 }}> 
-//                 <Typography variant="h6">Log Details</Typography> 
-//                 <Box sx={{ mt: 2, height: '200px', backgroundColor: '#f5f5f5', p: 2 }}> 
-//                     <Typography variant="body2" sx={{ textAlign: 'center' }}> 
-//                         Detailed log information will be displayed here when a log is selected from the list. 
-//                     </Typography> 
-//                 </Box> 
-//             </Paper> 
-
-//             {/* Export and Retention Controls */} 
-//             <Box sx={{ mt: 3, display: 'flex', justifyContent: 'space-between' }}> 
-//                 <Button variant="contained" color="primary">Export Logs</Button> 
-//                 <Button variant="outlined" color="secondary">Set Retention Policy</Button> 
-//             </Box> 
-//         </Box> 
-//     ); 
-// }; 
-
-// export default Logs; 
-
-
 import React, { useState } from 'react'; 
-import { Paper, Typography, Tabs, Tab, Grid } from '@mui/material'; 
+import { Box, Paper, Typography, Select, MenuItem, Button, Grid, TextField } from '@mui/material'; 
 import { DataGrid } from '@mui/x-data-grid'; 
+import LogDetails from './LogDetails'; 
   
 const Logs = () => { 
-    const [selectedLogType, setSelectedLogType] = useState(0); 
+    const [logType, setLogType] = useState('Syslog'); 
+    const [selectedLog, setSelectedLog] = useState(null); 
+    const [filterCriteria, setFilterCriteria] = useState({ severity: '', source: '', startTime: '', endTime: '' }); 
 
-    const logTypes = ['Syslog', 'DNS Logs', 'Authentication Logs', 'TLS/SSL Logs', 'Firewall Logs', 'File Integrity Logs']; 
-
-    const handleChange = (event, newValue) => { 
-        setSelectedLogType(newValue); 
-    }; 
-
-    // Example data for different log types 
+    // Sample log data for different log types (to be replaced with actual data fetching) 
     const logData = { 
-
         Syslog: [ 
-            { id: 1, timestamp: '2024-10-18 12:01:02', message: 'System rebooted', level: 'Info' }, 
-            { id: 2, timestamp: '2024-10-18 12:02:03', message: 'User logged in', level: 'Info' }, 
+            { id: 1, timestamp: '2024-10-18 12:00:01', source: '192.168.1.1', severity: 'INFO', message: 'System rebooted' }, 
+            { id: 2, timestamp: '2024-10-18 12:05:34', source: '192.168.1.2', severity: 'WARN', message: 'Service unavailable' }, 
+        ],
+
+        DNS: [ 
+            { id: 1, timestamp: '2024-10-18 12:03:21', source: '192.168.1.3', severity: 'INFO', message: 'DNS query resolved' }, 
+            { id: 2, timestamp: '2024-10-18 12:08:45', source: '192.168.1.4', severity: 'ERROR', message: 'DNS query failed' }, 
         ], 
 
-        'DNS Logs': [ 
-            { id: 1, timestamp: '2024-10-18 13:05:22', domain: 'example.com', action: 'Query' }, 
-            { id: 2, timestamp: '2024-10-18 13:07:15', domain: 'another.com', action: 'Blocked' }, 
-        ], 
-
-        'Authentication Logs': [ 
-            { id: 1, timestamp: '2024-10-18 12:30:02', user: 'admin', result: 'Success' }, 
-            { id: 2, timestamp: '2024-10-18 12:35:10', user: 'guest', result: 'Failed' }, 
-        ], 
-
-        'TLS/SSL Logs': [ 
-            { id: 1, timestamp: '2024-10-18 14:05:22', certificate: 'Cert_12345', status: 'Valid' }, 
-            { id: 2, timestamp: '2024-10-18 14:15:00', certificate: 'Cert_67890', status: 'Expired' }, 
-        ], 
-
-        'Firewall Logs': [
-            { id: 1, timestamp: '2024-10-18 14:25:10', action: 'Allow', sourceIP: '192.168.1.1', destinationIP: '10.0.0.1' }, 
-            { id: 2, timestamp: '2024-10-18 14:27:35', action: 'Block', sourceIP: '192.168.1.2', destinationIP: '10.0.0.2' }, 
-        ], 
-
-        'File Integrity Logs': [ 
-            { id: 1, timestamp: '2024-10-18 14:40:05', file: '/etc/passwd', status: 'Unchanged' }, 
-            { id: 2, timestamp: '2024-10-18 14:45:22', file: '/var/log/auth.log', status: 'Modified' }, 
+        Authentication: [ 
+            { id: 1, timestamp: '2024-10-18 12:02:33', source: '192.168.1.5', severity: 'WARN', message: 'Failed login attempt' }, 
+            { id: 2, timestamp: '2024-10-18 12:09:01', source: '192.168.1.6', severity: 'CRITICAL', message: 'Multiple failed login attempts' }, 
         ], 
     }; 
 
-    // Define columns for different log types 
-    const columns = { 
-        Syslog: [ 
-            { field: 'timestamp', headerName: 'Timestamp', flex: 1 }, 
-            { field: 'message', headerName: 'Message', flex: 2 }, 
-            { field: 'level', headerName: 'Level', flex: 1 }, 
-        ], 
+    // Columns for DataGrid 
+    const columns = [ 
+        { field: 'timestamp', headerName: 'Timestamp', flex: 1 }, 
+        { field: 'source', headerName: 'Source', flex: 1 }, 
+        { field: 'severity', headerName: 'Severity', flex: 1 }, 
+        { field: 'message', headerName: 'Message', flex: 2 }, 
+    ]; 
 
-        'DNS Logs': [ 
-            { field: 'timestamp', headerName: 'Timestamp', flex: 1 }, 
-            { field: 'domain', headerName: 'Domain', flex: 2 }, 
-            { field: 'action', headerName: 'Action', flex: 1 }, 
-        ], 
+    // Handle log type change 
+    const handleLogTypeChange = (event) => { 
+        setLogType(event.target.value); 
+        setSelectedLog(null); 
+        setFilterCriteria({ severity: '', source: '', startTime: '', endTime: '' }); // Reset filter when switching log types 
+    }; 
 
-        'Authentication Logs': [ 
-            { field: 'timestamp', headerName: 'Timestamp', flex: 1 }, 
-            { field: 'user', headerName: 'User', flex: 1 }, 
-            { field: 'result', headerName: 'Result', flex: 1 }, 
-        ], 
-        
-        'TLS/SSL Logs': [ 
-            { field: 'timestamp', headerName: 'Timestamp', flex: 1 }, 
-            { field: 'certificate', headerName: 'Certificate', flex: 2 }, 
-            { field: 'status', headerName: 'Status', flex: 1 }, 
-        ], 
+    // Handle log selection from DataGrid 
+    const handleLogSelection = (log) => { 
+        setSelectedLog(log); 
+    }; 
 
-        'Firewall Logs': [ 
-            { field: 'timestamp', headerName: 'Timestamp', flex: 1 }, 
-            { field: 'action', headerName: 'Action', flex: 1 }, 
-            { field: 'sourceIP', headerName: 'Source IP', flex: 1 }, 
-            { field: 'destinationIP', headerName: 'Destination IP', flex: 1 }, 
-        ], 
+    // Handle filter change 
+    const handleFilterChange = (event) => { 
+        const { name, value } = event.target; 
+        setFilterCriteria({ ...filterCriteria, [name]: value }); 
+    }; 
 
-        'File Integrity Logs': [ 
-            { field: 'timestamp', headerName: 'Timestamp', flex: 1 }, 
-            { field: 'file', headerName: 'File', flex: 2 }, 
-            { field: 'status', headerName: 'Status', flex: 1 }, 
-        ], 
+    // Apply filtering to log data 
+    const filteredLogs = logData[logType].filter((log) => { 
+        const matchesSeverity = filterCriteria.severity ? log.severity === filterCriteria.severity : true; 
+        const matchesSource = filterCriteria.source ? log.source.includes(filterCriteria.source) : true; 
+        const matchesTime = (!filterCriteria.startTime || new Date(log.timestamp) >= new Date(filterCriteria.startTime)) && 
+                            (!filterCriteria.endTime || new Date(log.timestamp) <= new Date(filterCriteria.endTime)); 
+        return matchesSeverity && matchesSource && matchesTime; 
+    }); 
+
+    // Aggregation summary 
+    const logSummary = { 
+        totalLogs: filteredLogs.length, 
+        severityCounts: filteredLogs.reduce((acc, log) => { 
+            acc[log.severity] = (acc[log.severity] || 0) + 1; 
+            return acc; 
+        }, {}), 
+        uniqueSources: new Set(filteredLogs.map((log) => log.source)).size, 
     }; 
 
     return ( 
-
         <> 
-            <Paper elevation={3} sx={{ p: 2, mb: 3 }}> 
-                <Typography variant="h6">Log Types</Typography> 
-                <Tabs 
-                    value={selectedLogType} 
-                    onChange={handleChange} 
-                    indicatorColor="primary" 
-                    textColor="primary" 
-                    variant="scrollable" 
-                    scrollButtons="auto" 
-                    sx={{ mt: 2 }} 
-                > 
-                    {logTypes.map((type, index) => ( 
-                        <Tab label={type} key={type} /> 
-                    ))} 
-                </Tabs> 
+            <Paper elevation={3} sx={{ p: 2, mb: 3, mt: -10 }}> 
+                <Typography variant="h6">Select Log Type</Typography> 
+                <Select value={logType} onChange={handleLogTypeChange} fullWidth sx={{ mt: 2 }}> 
+                    <MenuItem value="Syslog">Syslog</MenuItem> 
+                    <MenuItem value="DNS">DNS Logs</MenuItem> 
+                    <MenuItem value="Authentication">Authentication Logs</MenuItem> 
+                </Select> 
             </Paper> 
 
-            <Paper elevation={3} sx={{ p: 2, height: 400 }}> 
-                <Typography variant="h6" sx={{ mb: 2 }}> 
-                    {logTypes[selectedLogType]} Logs 
-                </Typography> 
+            {/* Filter Section */} 
+            <Paper elevation={3} sx={{ p: 2, mb: 3, mt: -2 }}> 
+                <Typography variant="h6">Filter Logs</Typography> 
+                <Grid container spacing={2} sx={{ mt: 2 }}> 
+                    <Grid item xs={3}> 
+                        <TextField 
+                            label="Severity" 
+                            name="severity" 
+                            value={filterCriteria.severity} 
+                            onChange={handleFilterChange} 
+                            fullWidth 
+                        /> 
+                    </Grid> 
+                    <Grid item xs={3}> 
+                        <TextField 
+                            label="Source" 
+                            name="source" 
+                            value={filterCriteria.source} 
+                            onChange={handleFilterChange} 
+                            fullWidth 
+                        /> 
+                    </Grid> 
+                    <Grid item xs={3}> 
+                        <TextField 
+                            label="Start Time" 
+                            type="datetime-local" 
+                            name="startTime" 
+                            value={filterCriteria.startTime} 
+                            onChange={handleFilterChange} 
+                            InputLabelProps={{ shrink: true }} 
+                            fullWidth 
+                        /> 
+                    </Grid> 
+                    <Grid item xs={3}> 
+                        <TextField 
+                            label="End Time" 
+                            type="datetime-local" 
+                            name="endTime" 
+                            value={filterCriteria.endTime} 
+                            onChange={handleFilterChange} 
+                            InputLabelProps={{ shrink: true }} 
+                            fullWidth 
+                        /> 
+                    </Grid> 
+                </Grid> 
+            </Paper> 
+
+            {/* Aggregation Summary */} 
+            <Paper elevation={3} sx={{ p: 2, mb: 3, mt: -2 }}> 
+                <Typography variant="h6">Log Aggregation Summary</Typography> 
+                <Typography>Total Logs: {logSummary.totalLogs}</Typography> 
+                <Typography>Unique Sources: {logSummary.uniqueSources}</Typography> 
+                <Typography>Logs by Severity:</Typography> 
+                {Object.entries(logSummary.severityCounts).map(([severity, count]) => ( 
+                    <Typography key={severity}>{severity}: {count}</Typography> 
+                ))} 
+            </Paper> 
+
+            {/* DataGrid for displaying logs */} 
+            <Paper elevation={3} sx={{ p: 2, mb: 3, mt: -2, height: 400 }}> 
+                <Typography variant="h6" sx={{ mb: 2 }}>{logType} Logs</Typography> 
                 <DataGrid 
-                    rows={logData[logTypes[selectedLogType]]} 
-                    columns={columns[logTypes[selectedLogType]]} 
+                    rows={filteredLogs} 
+                    columns={columns} 
                     pageSize={5} 
                     rowsPerPageOptions={[5, 10, 25]} 
-                    checkboxSelection 
+                    onRowClick={(params) => handleLogSelection(params.row)} 
                     disableSelectionOnClick 
+                    sx={{ mt: -2, height: '94%' }}
                 /> 
             </Paper> 
+
+            {/* Log Details */} 
+            {selectedLog && <LogDetails log={selectedLog} />} 
+
+            {/* Export and Retention Controls */} 
+            <Box sx={{ mt: 3, display: 'flex', justifyContent: 'space-between' }}> 
+                <Button variant="contained" color="primary" sx={{ backgroundColor: '#212121' }} >Export Logs</Button> 
+                <Button variant="outlined" color="black" sx={{ backgroundColor: 'white'}}>Set Retention Policy</Button> 
+            </Box> 
         </> 
     ); 
 }; 
