@@ -1,107 +1,159 @@
 import { Box, Button, Grid, Paper, Typography } from "@mui/material";
-import React, { useEffect, useState } from "react";
-import Cytoscape from "cytoscape";
-import { io } from "socket.io-client";
+import React, { useEffect, useRef, useState } from "react";
+import * as d3 from "d3";
 
 const NetworkOverview = () => {
+    const svgRef = useRef(null);
+
     const [isNetworkConnected, setIsNetworkConnected] = useState(false);
     const [nodeCount, setNodeCount] = useState(0);
-    const [trafficData, setTrafficData] = useState([]);
+    const [activeNodeCount, setActiveNodeCount] = useState(0);
 
-    // Initialise WebSocket connection
-    const socket = io('http://localhost:5000');
+    const networkData = {
+        nodes: [
+            {id: 'CONTROL SW', type: 'control-switch', status: 'Active'},
+            {id: 'SCADA', type: 'control-switch', status: 'Active'},
+            {id: 'DSS1 GW', type: 'control-switch', status: 'Active'},
+            {id: 'DSS2 GW', type: 'control-switch', status: 'Inactive'},
+            {id: 'DPS GW', type: 'control-switch', status: 'Active'},
+            {id: 'IED1', type: 'control-switch', status: 'Active'},
+            {id: 'IED2', type: 'control-switch', status: 'Inactive'},
+            {id: 'IED3', type: 'control-switch', status: 'Active'},
+            {id: 'IED4', type: 'control-switch', status: 'Active'},
+            {id: 'DSS1 RTU', type: 'control-switch', status: 'Inactive'},
+            {id: 'DSS2 RTU', type: 'control-switch', status: 'Active'},
+            {id: 'IDS', type: 'control-switch', status: 'Active'}
+        ],
+        links: [
+            {source: 'CONTROL SW', target: 'DSS1 GW', type: 'wan'},
+            {source: 'CONTROL SW', target: 'DSS2 GW', type: 'wan'},
+            {source: 'CONTROL SW', target: 'DPS GW', type: 'wan'},
+            {source: 'DPS GW', target: 'IED1', type: 'lan'},
+            {source: 'DPS GW', target: 'IED2', type: 'lan'},
+            {source: 'DPS GW', target: 'IED3', type: 'lan'},
+            {source: 'DPS GW', target: 'IED4', type: 'lan'},
+            {source: 'DSS1 GW', target: 'DSS1 RTU', type: 'iec104'},
+            {source: 'DSS2 GW', target: 'DSS1 RTU', type: 'iec104'},
+            {source: 'DSS1 GW', target: 'IDS', type: 'security'}
+        ]
+    };
 
     const toggleNetworkConnection = () => {
         setIsNetworkConnected(!isNetworkConnected);
     };
 
-    // Fetch initial network data (nodes and connections) and set up WebSocket for real-time traffic updates
     useEffect(() => {
-        fetch("http://localhost:5000/api/network_overview")
-            .then((response) => response.json())
-            .then((data) => {
-                setNodeCount(data.nodes.length);
-                initializeTopologyGraph(data); // Initialise the network graph
+        const svg = d3.select(svgRef.current);
+        const width = 800;
+        const height = 500;
 
-                // Listen for real-time traffic updates via WebSocket
-            socket.on('traffic_update', (newTrafficFlow) =>{
-                setTrafficData((prevData) => [...prevData, newTrafficFlow]);
-                updateGraphWithTraffic(newTrafficFlow); // Update the graph with new traffic
+        svg.selectAll('*').remove();
+
+        const zoomHandler = d3.zoom()
+            .scaleExtent([0.1, 2])
+            .on('zoom', (event) => {
+                g.attr('transform', event.transform);
             });
 
-            return () => {
-                socket.disconnect(); // Clean up the socket connection when component unmounts
-            };
-        })
-        .catch((error) => console.error("Error fetching network data:", error));
-    }, []);
+        svg.call(zoomHandler);
 
-    // Initialise Cytoscape for topology visualisation 
-    const initializeTopologyGraph = (data) => {
-        const nodeNames = new Set(data.nodes.map(node => node.node_name));
+        const g = svg.append('g');
 
-        const nodes = data.nodes.map(node => ({
-            data: { id: node.node_name, label: node.node_name },
-            classes: node.type // Different types of nodes
-        }));
-        
-        const connections = data.connections.filter(connection =>
-            nodeNames.has(connection.source_node) && nodeNames.jas(connection.destination_node)
-        ).map(connection => ({
-            data: { source: connection.source_node, target: connection.destination_node }
-        }));
-        
-        const cy = Cytoscape({ 
-            container: document.getElementById("cytoscape-container"), 
-            elements: [
-                ...nodes,
-                ...connections
-            ], 
-            style: [ 
-                { 
-                    selector: "node.switch", 
-                    style: { 
-                        "background-color": "#007bff", 
-                        "shape": "rectangle",
-                        "label": "data(label)" 
-                    } 
-                }, 
-                { 
-                    selector: "node.computer", 
-                    style: { 
-                        "background-color": "#4caf50",
-                        "shape": "ellipse",
-                        "label": "data(label)"
-                    } 
-                },
-                {
-                    selector: "edge",
-                    style: {
-                        "width": 2, 
-                        "line-color": "#ccc",
-                        "target-arrow-color": "#ccc",
-                        "target-arrow-shape": "triangle"
-                    }
+        const simulation = d3.forceSimulation(networkData.nodes)
+            .force('link', d3.forceLink(networkData.links).id(d => d.id).distance(150))
+            .force('charge', d3.forceManyBody().strength(-500))
+            .force('center', d3.forceCenter(width/2, height/2));
+
+        const link = g.append('g')
+            .attr('class', 'links')
+            .selectAll('line')
+            .data(networkData.links)
+            .enter()
+            .append('line')
+            .attr('stroke-width', 2)
+            .attr('stroke', d => {
+                switch (d.type) {
+                    case 'wan': return '#007bff';
+                    case 'lan': return '#4caf50';
+                    case 'iec104': return '#ff9800';
+                    case 'security': return '#f44336';
+                    default: return '#ccc';
                 }
-            ], 
-            layout: { name: "breadthfirst", rows: 3 } 
-        }); 
-        // Store the Cytoscape instance to be used for later updates 
-        window.cy = cy; 
-    }; 
+            });
 
-    // Function to update the real-time traffic flow graph (right section) 
-    const updateTrafficGraph = (newTrafficFlow) => { 
-        // Find the graph container for real-time traffic 
-        const trafficGraphContainer = document.getElementById("traffic-graph-container"); 
-        // Create a new traffic flow entry (for example, as a list item or chart update) 
-        const trafficFlowElement = document.createElement("div"); 
-        trafficFlowElement.textContent = `Flow from ${newTrafficFlow.source_node} to ${newTrafficFlow.destination_node} (${newTrafficFlow.packet_size} bytes, ${newTrafficFlow.latency} ms)`; 
-        trafficFlowElement.style.padding = "10px"; 
-        trafficFlowElement.style.borderBottom = "1px solid #ccc"; 
-        // Append the new traffic flow to the graph container 
-        trafficGraphContainer.appendChild(trafficFlowElement); 
-    }; 
+        const node = g.append('g')
+        .attr('class', 'nodes')
+        .selectAll('circle')
+        .data(networkData.nodes)
+        .enter()
+        .append('circle')
+        .attr('r', 20)
+        .attr('fill', d => {
+            switch (d.type) {
+                case 'control-switch': return '#007bff';
+                case 'scada': return '#ffeb3b';
+                case 'gateway': return '#9c27b0';
+                case 'ied': return '#4caf50';
+                case 'rtu': return '#ff9800';
+                case 'ids': return '#f44336';
+                default: return '#ccc';
+            }
+        })
+        .call(d3.drag()
+            .on('start', dragstarted)
+            .on('drag', dragged)
+            .on('end', dragended));
+
+        const labels = g.append('g')
+        .attr('class', 'labels')
+        .selectAll('text')
+        .data(networkData.nodes)
+        .enter()
+        .append('text')
+        .attr('x', 6)
+        .attr('y', 3)
+        .text(d => d.id)
+        .style('font-size', '12px')
+        .style('font-family', 'Arial')
+        .style('fill', '#000');
+
+    simulation.on('tick', () => {
+        link
+            .attr('x1', d => d.source.x)
+            .attr('y1', d => d.source.y)
+            .attr('x2', d => d.target.x)
+            .attr('y2', d => d.target.y);
+
+        node
+            .attr('cx', d => d.x)
+            .attr('cy', d => d.y);
+
+        labels
+            .attr('x', d => d.x + 25)
+            .attr('y', d => d.y);
+    });
+
+    function dragstarted(event, d) {
+        if (!event.active) simulation.alphaTarget(0.3).restart();
+        d.fx = d.x;
+        d.fy = d.y;
+    }
+
+    function dragged(event, d) {
+        d.fx = event.x;
+        d.fy = event.y;
+    }
+
+    function dragended(event, d) {
+        if (!event.active) simulation.alphaTarget(0);
+        d.fx = null;
+        d.fy = null;
+    }
+
+    setNodeCount(networkData.nodes.length);
+    setActiveNodeCount(networkData.nodes.filter(node => node.status === 'Active').length);
+
+    }, []);
 
     return (
         <Grid container spacing={3} mt={-10} >
@@ -126,12 +178,12 @@ const NetworkOverview = () => {
             {/* Nodes Connected Box */}
             <Grid item xs={12} sm={6} lg={6}>
                 <Paper elevation={3} sx={{ p: 3, textAlign: 'center', height: '100px' }}>
-                    <Typography variant="h6" sx={{ mt: -1.5 }}>Nodes connected</Typography>
+                    <Typography variant="h6" sx={{ mt: -1.5 }}>Active nodes</Typography>
                     <Typography variant="h3" sx={{ mt: 1 }}>
-                        {nodeCount}
+                        {activeNodeCount}
                     </Typography>
                     <Typography variant="body2" sx={{ mt: 1 }}>
-                        Total nodes in the Network
+                        Total nodes in the Network: {nodeCount}
                     </Typography>
                 </Paper>
             </Grid>
@@ -143,8 +195,9 @@ const NetworkOverview = () => {
                     <Paper elevation={3} sx={{ p: 3, height: '500px' }}>
                         <Typography variant="h6">Network Topology</Typography>
                         {/* Placeholder for network topology visualization */}
-                        <Box id="cytoscape-container" sx={{ mt: 0, height: '96%', backgroundColor: '#f5f5f5' }}>
+                        <Box sx={{ mt: 0, height: '96%', backgroundColor: '#f5f5f5' }}>
                             {/* Network topology will be displayed here. */}
+                            <svg ref={svgRef} width="100%" height="100%" style={{ border: '1px solid #ccc' }}></svg>
                         </Box>
                     </Paper>
                 </Grid>
@@ -154,7 +207,7 @@ const NetworkOverview = () => {
                     <Paper elevation={3} sx={{ p: 3, height: '500px' }}>
                         <Typography variant="h6">Network Traffic</Typography>
                         {/* Placeholder for network traffic visualization */}
-                        <Box id="traffic-graph-container" sx={{ mt: 0, height: '96%', backgroundColor: '#f5f5f5' }}>
+                        <Box sx={{ mt: 0, height: '96%', backgroundColor: '#f5f5f5' }}>
                             {/* Network Traffic will be displayed here. */}
                         </Box>
                     </Paper>

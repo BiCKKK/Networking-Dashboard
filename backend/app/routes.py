@@ -1,8 +1,9 @@
 from flask import Blueprint, jsonify
-from .models import (NetworkTopology, NodeConnections, TrafficFlow, AttackEvents, IDSAlerts, AnomalyDetection) 
+from .models import (NetworkTopology, NodeConnections, TrafficFlow) 
 from . import db, socketio
 from flask_socketio import emit
 import random
+import time
 
 # Define the Blueprint 
 main = Blueprint('main', __name__) 
@@ -49,7 +50,9 @@ def start_real_time_traffic_simulation():
                     'latency': round(random.uniform(0.1, 50.0,), 2),
                     'flow_status': "Active"
         }
-        emit('traffic_update', new_flow.serialize(), broadcast=True) # Emit real-time data to frontend
+        emit('traffic_update', new_flow, broadcast=True) # Emit real-time data to frontend
+
+        time.sleep(1)
 
 # # ----------- Traffic Flow APIs ----------- 
 # @main.route('/api/traffic_flow', methods=['GET']) 
@@ -57,24 +60,3 @@ def start_real_time_traffic_simulation():
 #     """Fetch all traffic flow data.""" 
 #     traffic = TrafficFlow.query.all() 
 #     return jsonify([serialize_instance(flow) for flow in traffic]) 
-  
-# ----------- Attack Events APIs ----------- 
-@main.route('/api/attack_events', methods=['GET']) 
-def get_attack_events(): 
-    """Fetch all attack events data.""" 
-    events = AttackEvents.query.all() 
-    return jsonify([serialize_instance(event) for event in events]) 
-
-# ----------- IDS Alerts APIs ----------- 
-@main.route('/api/ids_alerts', methods=['GET']) 
-def get_ids_alerts(): 
-    """Fetch all IDS alerts data.""" 
-    alerts = IDSAlerts.query.all() 
-    return jsonify([serialize_instance(alert) for alert in alerts]) 
-
-# ----------- Anomaly Detection APIs ----------- 
-@main.route('/api/anomaly_detection', methods=['GET']) 
-def get_anomaly_detections(): 
-    """Fetch all anomaly detection data.""" 
-    anomalies = AnomalyDetection.query.all() 
-    return jsonify([serialize_instance(anomaly) for anomaly in anomalies]) 
