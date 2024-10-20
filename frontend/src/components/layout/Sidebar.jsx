@@ -35,24 +35,21 @@ const Sidebar = ({ open, onClose}) => {
         >
             <List>
                 {menuItems.map((item) => (
-                    <NavLink
+                    <ListItem
                         to={item.path}
                         key={item.text}
-                        style={{ textDecoration: 'none', color: 'inherit' }}
+                        button="true"
+                        component={NavLink}
+                        sx={{cursor: 'pointer', textDecoration: 'none', color: 'inherit'}}
+                        onClick={() => {
+                            if (open) {
+                                onClose();
+                            }
+                        }}
                     >
-                        <ListItem 
-                            button 
-                            sx={{cursor: 'pointer'}}
-                            onClick={() => {
-                                if (open) {
-                                    onClose();
-                                }
-                            }}
-                        >
-                            <ListItemIcon>{item.icon}</ListItemIcon>
-                            {open && <ListItemText primary={item.text} />}
-                        </ListItem>
-                    </NavLink>
+                        <ListItemIcon>{item.icon}</ListItemIcon>
+                        {open && <ListItemText primary={item.text} />}
+                    </ListItem>
                 ))}
             </List>
         </Drawer>

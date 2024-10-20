@@ -38,17 +38,17 @@ const NetworkOverview = () => {
 
     // Initialise Cytoscape for topology visualisation 
     const initializeTopologyGraph = (data) => {
-        const nodes = data.nodes.map(node => ({ data: {id: node.node_name, label: node.node_name} }));
-        
-        // Filter connections to ensue the source and destination nodes exist in the nodes array
         const nodeNames = new Set(data.nodes.map(node => node.node_name));
+
+        const nodes = data.nodes.map(node => ({
+            data: { id: node.node_name, label: node.node_name },
+            classes: node.type // Different types of nodes
+        }));
+        
         const connections = data.connections.filter(connection =>
-            nodeNames.has(connection.source_node) && nodeNames.has(connection.destination_node)
+            nodeNames.has(connection.source_node) && nodeNames.jas(connection.destination_node)
         ).map(connection => ({
-            data: {
-                source: connection.source_node,
-                target: connection.destination_node
-            }
+            data: { source: connection.source_node, target: connection.destination_node }
         }));
         
         const cy = Cytoscape({ 
@@ -59,23 +59,32 @@ const NetworkOverview = () => {
             ], 
             style: [ 
                 { 
-                    selector: "node", 
+                    selector: "node.switch", 
                     style: { 
                         "background-color": "#007bff", 
+                        "shape": "rectangle",
                         "label": "data(label)" 
                     } 
                 }, 
                 { 
-                    selector: "edge", 
+                    selector: "node.computer", 
                     style: { 
-                        "width": 3, 
-                        "line-color": "#ccc", 
-                        "target-arrow-color": "#ccc", 
-                        "target-arrow-shape": "triangle" 
+                        "background-color": "#4caf50",
+                        "shape": "ellipse",
+                        "label": "data(label)"
                     } 
-                } 
+                },
+                {
+                    selector: "edge",
+                    style: {
+                        "width": 2, 
+                        "line-color": "#ccc",
+                        "target-arrow-color": "#ccc",
+                        "target-arrow-shape": "triangle"
+                    }
+                }
             ], 
-            layout: { name: "grid", rows: 3 } 
+            layout: { name: "breadthfirst", rows: 3 } 
         }); 
         // Store the Cytoscape instance to be used for later updates 
         window.cy = cy; 
