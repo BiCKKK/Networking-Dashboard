@@ -19,18 +19,24 @@ def generate_sample_data():
     
     # Real Network Topology Data (from your shared diagram) 
     real_network_data = [ 
-        {"node_name": "CONTROL SW", "node_type": "Control Switch", "status": "Active", "role": "Control Center", "ip_address": "192.168.1.1", "hierarchy_level": "Control Center"}, 
-        {"node_name": "SCADA", "node_type": "SCADA", "status": "Active", "role": "Control Center", "ip_address": "192.168.1.2", "hierarchy_level": "Control Center"}, 
-        {"node_name": "DSS1 GW", "node_type": "Gateway", "status": "Active", "role": "Secondary Substation", "ip_address": "192.168.2.1", "hierarchy_level": "Secondary Substation 1"}, 
-        {"node_name": "DSS2 GW", "node_type": "Gateway", "status": "Active", "role": "Secondary Substation", "ip_address": "192.168.2.2", "hierarchy_level": "Secondary Substation 2"}, 
-        {"node_name": "DPS GW", "node_type": "Gateway", "status": "Active", "role": "Primary Substation", "ip_address": "192.168.3.1", "hierarchy_level": "Primary Substaton"}, 
-        {"node_name": "IED1", "node_type": "IED", "status": "Active", "role": "Primary Substation", "ip_address": "192.168.3.2", "hierarchy_level": "Primary Substation"}, 
-        {"node_name": "IED2", "node_type": "IED", "status": "Active", "role": "Primary Substation", "ip_address": "192.168.3.3", "hierarchy_level": "Primary Substation"}, 
-        {"node_name": "IED3", "node_type": "IED", "status": "Active", "role": "Primary Substation", "ip_address": "192.168.3.4", "hierarchy_level": "Primary Substation"}, 
-        {"node_name": "IED4", "node_type": "IED", "status": "Active", "role": "Primary Substation", "ip_address": "192.168.3.5", "hierarchy_level": "Primary Substation"}, 
-        {"node_name": "DSS1 RTU", "node_type": "RTU", "status": "Active", "role": "Secondary Substation", "ip_address": "192.168.2.3", "hierarchy_level": "Secondary Substation 1"}, 
-        {"node_name": "DSS2 RTU", "node_type": "RTU", "status": "Active", "role": "Secondary Substation", "ip_address": "192.168.2.4", "hierarchy_level": "Secondary Substation 2"}, 
-        {"node_name": "IDS", "node_type": "IDS", "status": "Active", "role": "Intrusion Detection", "ip_address": "192.168.2.5", "hierarchy_level": "Security"} 
+        {"node_name": "CONTROL SW", "node_type": "Control Switch", "status": "Active"}, 
+        {"node_name": "CONTROL SCADA", "node_type": "SCADA", "status": "Active"}, 
+        {"node_name": "WAN R1", "node_type": "WAN", "status": "Active"}, 
+        {"node_name": "WAN R2", "node_type": "WAN", "status": "Active"}, 
+        {"node_name": "DPS GW", "node_type": "Gateway", "status": "Active"}, 
+        {"node_name": "DPS RS", "node_type": "Router", "status": "Active"}, 
+        {"node_name": "DPS HV", "node_type": "HighVoltageSystem", "status": "Active"}, 
+        {"node_name": "IED1", "node_type": "IED", "status": "Active"}, 
+        {"node_name": "IED2", "node_type": "IED", "status": "Active"}, 
+        {"node_name": "DPS MV", "node_type": "MediumVoltageSystem", "status": "Active"}, 
+        {"node_name": "IED3", "node_type": "IED", "status": "Active"}, 
+        {"node_name": "IED4", "node_type": "IED", "status": "Active"}, 
+        {"node_name": "DPS HMI", "node_type": "HMI", "status": "Active"}, 
+        {"node_name": "DSS1 GW", "node_type": "Gateway", "status": "Active"}, 
+        {"node_name": "IDS", "node_type": "IDS", "status": "Active"}, 
+        {"node_name": "DSS1 RTU", "node_type": "RTU", "status": "Active"}, 
+        {"node_name": "DSS2 GW", "node_type": "Gateway", "status": "Active"}, 
+        {"node_name": "DSS2 RTU", "node_type": "RTU", "status": "Active"}  
     ] 
     # Insert real NetworkTopology data 
     network_topology_data = [NetworkTopology( 
@@ -53,16 +59,23 @@ def generate_sample_data():
 
     # Real Node Connections Data (from your shared diagram) 
     real_connections_data = [ 
-        {"source_node": "CONTROL SW", "destination_node": "DSS1 GW", "connection_type": "WAN", "connection_properties": "Bandwidth=1Gbps"}, 
-        {"source_node": "CONTROL SW", "destination_node": "DSS2 GW", "connection_type": "WAN", "connection_properties": "Bandwidth=1Gbps"}, 
-        {"source_node": "CONTROL SW", "destination_node": "DPS GW", "connection_type": "WAN", "connection_properties": "Bandwidth=1Gbps"}, 
-        {"source_node": "DPS GW", "destination_node": "IED1", "connection_type": "LAN", "connection_properties": "Fiber"}, 
-        {"source_node": "DPS GW", "destination_node": "IED2", "connection_type": "LAN", "connection_properties": "Fiber"}, 
-        {"source_node": "DPS GW", "destination_node": "IED3", "connection_type": "LAN", "connection_properties": "Fiber"}, 
-        {"source_node": "DPS GW", "destination_node": "IED4", "connection_type": "LAN", "connection_properties": "Fiber"}, 
+        {"source_node": "CONTROL SW", "destination_node": "CONTROL SCADA", "connection_type": "LAN", "connection_properties": ""}, 
+        {"source_node": "CONTROL SW", "destination_node": "WAN R1", "connection_type": "WAN", "connection_properties": ""}, 
+        {"source_node": "CONTROL SW", "destination_node": "WAN R2", "connection_type": "WAN", "connection_properties": ""},
+        {"source_node": "CONTROL SW", "destination_node": "DPS GW", "connection_type": "LAN", "connection_properties": ""}, 
+        {"source_node": "DPS GW", "destination_node": "DPS RS", "connection_type": "LAN", "connection_properties": ""}, 
+        {"source_node": "DPS RS", "destination_node": "DPS HV", "connection_type": "LAN", "connection_properties": ""}, 
+        {"source_node": "DPS HV", "destination_node": "IED1", "connection_type": "LAN", "connection_properties": ""}, 
+        {"source_node": "DPS HV", "destination_node": "IED2", "connection_type": "LAN", "connection_properties": ""}, 
+        {"source_node": "DPS RS", "destination_node": "DPS MV", "connection_type": "LAN", "connection_properties": ""}, 
+        {"source_node": "DPS MV", "destination_node": "IED3", "connection_type": "LAN", "connection_properties": ""},
+        {"source_node": "DPS MV", "destination_node": "IED4", "connection_type": "LAN", "connection_properties": ""}, 
+        {"source_node": "DPS RS", "destination_node": "DPS HMI", "connection_type": "LAN", "connection_properties": ""}, 
+        {"source_node": "WAN R1", "destination_node": "DSS1 GW", "connection_type": "WAN", "connection_properties": ""}, 
+        {"source_node": "DSS1 GW", "destination_node": "IDS", "connection_type": "Security", "connection_properties": ""}, 
         {"source_node": "DSS1 GW", "destination_node": "DSS1 RTU", "connection_type": "IEC104", "connection_properties": ""}, 
-        {"source_node": "DSS2 GW", "destination_node": "DSS2 RTU", "connection_type": "IEC104", "connection_properties": ""}, 
-        {"source_node": "DSS1 GW", "destination_node": "IDS", "connection_type": "Security", "connection_properties": "Connected to IDS"}, 
+        {"source_node": "WAN R2", "destination_node": "DSS2 GW", "connection_type": "WAN", "connection_properties": ""}, 
+        {"source_node": "DSS2 GW", "destination_node": "DSS2 RTU", "connection_type": "IEC104", "connection_properties": ""} 
     ] 
 
     # Insert real NodeConnections data 
