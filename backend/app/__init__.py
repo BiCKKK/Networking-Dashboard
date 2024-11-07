@@ -23,5 +23,8 @@ def create_app(config_class=DevConfig):
     # Register Blueprints
     from .routes import main
     app.register_blueprint(main)
+
+    from .services.mininet_simulation import start_mininet_topology
+    start_mininet_topology()
     
     return app

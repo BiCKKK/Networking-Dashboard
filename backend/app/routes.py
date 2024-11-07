@@ -1,62 +1,44 @@
-from flask import Blueprint, jsonify
-from .models import (NetworkTopology, NodeConnections, TrafficFlow) 
+from flask import Blueprint, jsonify, request
 from . import db, socketio
+from .models import Node, NetworkFunction, Connection
 from flask_socketio import emit
-import random
-import time
+from .services.mininet_simulation import start_mininet_topology
+from .services.ebpf_control import install_function_on_node
 
 # Define the Blueprint 
 main = Blueprint('main', __name__) 
 
-# Helper function for serializing SQLAlchemy objects to dictionaries 
-def serialize_instance(instance): 
-    return instance.serialize() 
+@main.route('/api/connect', methods=['POST']) 
+def connect_network(): 
+    """Start the Mininet network simulation.""" 
+    start_mininet_topology() 
+    return jsonify({"status": "Network simulation started"}) 
 
-# ----------- Network Topology APIs ----------- 
-@main.route('/api/network_overview', methods=['GET']) 
-def get_network_overview():
-    """
-    Get network nodes, their connections, and real-time traffic data for visualisation
-    """ 
-    # Get all nodes
-    nodes =  NetworkTopology.query.all()
+@main.route('/api/nodes', methods=['GET']) 
+def get_nodes(): 
+    """Fetch all nodes with details.""" 
+    nodes = Node.query.all() 
+    return jsonify([node.serialize() for node in nodes]) 
+ 
+@main.route('/api/functions/install', methods=['POST']) 
+def install_function(): 
+    """Install eBPF function on a specified node.""" 
+    data = request.get_json() 
+    node_id = data.get('node_id') 
+    function_type = data.get('function_type') 
 
-    # Get connections between nodes
-    connections = NodeConnections.query.all()
+    # Call the function to install eBPF function 
+    success = install_function_on_node(node_id, function_type) 
+    if success: 
+        return jsonify({"status": "Function installed successfully"}) 
+    else: 
+        return jsonify({"error": "Failed to install function"}), 500 
 
-    # Get real-time traffic
-    traffic_flows = TrafficFlow.query.all()
+@socketio.on('monitoring_request') 
+def handle_monitoring_request(): 
+    """Emit monitoring data at intervals.""" 
+    # Fetch and emit monitoring data 
+    emit('monitoring_data', {'data': 'Monitoring data'}) 
 
-    # Response data
-    network_data = {
-        'nodes': [node.serialize() for node in nodes],
-        'connections': [connection.serialize() for connection in connections],
-        'traffic_flow': [flow.serialize() for flow in traffic_flows]
-    }
-    return jsonify(network_data) 
-
-# -------WebSocket: Real-Time Traffic Flow Simulation-------
-@socketio.on('start_simulation')
-def start_real_time_traffic_simulation():
-    """
-    Emit real-time traffic flow data over Websockets.
-    """
-    for _ in range(10):
-        # Randomly simulate traffic flow
-        new_flow = {'source_node': f"Node-{random.randint(1,5)}",
-                    'destination_node': f"Node-{random.randint(1,5)}",
-                    'protocol': random.choice(['TCP', 'UCP', 'ICMP']),
-                    'packet_size': random.randint(64, 1500),
-                    'latency': round(random.uniform(0.1, 50.0,), 2),
-                    'flow_status': "Active"
-        }
-        emit('traffic_update', new_flow, broadcast=True) # Emit real-time data to frontend
-
-        time.sleep(1)
-
-# # ----------- Traffic Flow APIs ----------- 
-# @main.route('/api/traffic_flow', methods=['GET']) 
-# def get_traffic_flow(): 
-#     """Fetch all traffic flow data.""" 
-#     traffic = TrafficFlow.query.all() 
-#     return jsonify([serialize_instance(flow) for flow in traffic]) 
+ 
+ 
