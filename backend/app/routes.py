@@ -34,11 +34,7 @@ def install_function():
     else: 
         return jsonify({"error": "Failed to install function"}), 500 
 
-@socketio.on('monitoring_request') 
-def handle_monitoring_request(): 
-    """Emit monitoring data at intervals.""" 
-    # Fetch and emit monitoring data 
-    emit('monitoring_data', {'data': 'Monitoring data'}) 
+
 
  
  
