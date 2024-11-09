@@ -10,6 +10,8 @@ class Config(object):
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_DATABASE_URI = os.getenv('DEV_DATABASE_URI', 'sqlite:///data.db')  # Database URI or Fallback to SQLite
     CORS_HEADERS = 'Content-Type'
+    BPFABRIC_PATH = os.path.join(os.path.dirname(__file__), 'BPFabric')
+    SMARTGRIDSIM_PATH = os.path.join(os.path.dirname(__file__), 'SmartGridSim', 'topologies', 'SGFabric.py')
 
 class DevConfig(Config):
     """Development-specific configuration."""
