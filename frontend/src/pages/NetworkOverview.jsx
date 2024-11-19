@@ -1,6 +1,7 @@
 import { Box, Button, Grid, Paper, Typography } from "@mui/material";
 import React, { useState } from "react";
 import NetworkTopology from "../components/network/NetworkTopology";
+import axios from "axios";
 
 const NetworkOverview = () => {
     const [isNetworkConnected, setIsNetworkConnected] = useState(false);
@@ -9,20 +10,44 @@ const NetworkOverview = () => {
     const [isSimulationRunning, setIsSimulationRunning] = useState(false); // Tracks simulation status
     const [simulationStatus, setSimulationStatus] = useState(""); // To display simulation status messages
 
-    const toggleNetworkConnection = () => {
-        setIsNetworkConnected(!isNetworkConnected);
+    const toggleNetworkConnection = async () => {
+        if (isNetworkConnected) {
+            try {
+                await axios.post('http://localhost:5050/api/stop');
+                setIsNetworkConnected(false);
+            } catch (error) {
+                console.error("Error stopping controller:", error);
+            }
+        } else {
+            try {
+                await axios.post('http://localhost:5050/api/start');
+                setIsNetworkConnected(true);
+            } catch (error) {
+                console.error("Error starting controller:", error);
+            }
+        }
     };
 
     // Handler to toggle simulation
-    const toggleSimulation = () => {
+    const toggleSimulation = async () => {
         if (isSimulationRunning) {
-            // Logic to stop the simulation
-            setIsSimulationRunning(false);
-            setSimulationStatus("Simulation Stopped.");
+            try {
+                await axios.post('http://localhost:5100/api/stop_sim');
+                setIsSimulationRunning(false);
+                setSimulationStatus("Simulation Stopped.");
+            } catch (error) {
+                console.error("Error stopping simulation:", error);
+                setSimulationStatus("Failed to stop simulation.");
+            }
         } else {
-            // Logic to start the simulation
-            setIsSimulationRunning(true);
-            setSimulationStatus("Simulation Started.")
+            try {
+                await axios.post('http://localhost:5100/api/start_sim');
+                setIsSimulationRunning(true);
+                setSimulationStatus("Simulation Started.");
+            } catch (error) {
+                console.error("Error starting simulation:", error);
+                setSimulationStatus("Failed to start the simulation.")
+            }
         }
     }
 
@@ -38,8 +63,13 @@ const NetworkOverview = () => {
                         onClick={toggleSimulation}
                         sx={{ mt: 2, backgroundColor: '#212121' }}
                     >
-                        {simulationStatus ? 'Stop Simulation' : 'Start Mininet Network Simulation'}
+                        {isSimulationRunning ? 'Stop Simulation' : 'Start Mininet Network Simulation'}
                     </Button>
+                    {simulationStatus && (
+                        <Typography variant="body2" sx={{ mt: 1 }}>
+                            {simulationStatus}
+                        </Typography>
+                    )}
                 </Paper>
             </Grid>
 
