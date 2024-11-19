@@ -5,13 +5,21 @@ import ProgressBar from '../network/ProgressBar';
 const Node = ({ data }) => {
     const isSwitch = data.deviceType === 'switch';
 
+    let nodeStyle = {
+        padding: '10px', background: '#f9f9f9',
+        borderRadius: '8px', border: '1px solid #ccc',
+        textAlign: 'center', minWidth: '120px', 
+        minHeight: '120px', position: 'relative'
+    }
+
+    if (data.status === 'connected') {
+        nodeStyle.border = '2px solid green';
+    } else {
+        nodeStyle.opacity = 0.5;
+    }
+
     return ( 
-        <div style={{ 
-            padding: '10px', background: '#f9f9f9', 
-            borderRadius: '8px', border: '1px solid #ccc', 
-            textAlign: 'center', minWidth: '120px', 
-            minHeight: '120px', position: 'relative' 
-        }}> 
+        <div style={nodeStyle} data-id={data.label}> 
             {data.image && ( 
                 <img 
                     src={data.image} 

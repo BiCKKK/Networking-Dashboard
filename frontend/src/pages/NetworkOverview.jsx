@@ -1,7 +1,50 @@
 import { Box, Button, Grid, Paper, Typography } from "@mui/material";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import NetworkTopology from "../components/network/NetworkTopology";
 import axios from "axios";
+import "@xyflow/react/dist/style.css"; 
+
+const devicePositions = {
+    'CONTROLSW': { x: 400, y: 50 },
+    'CONTROL': { x: 850, y: 60 },
+    'WANR1': { x: 200, y: 250 },
+    'WANR2': { x: 600, y: 250 },
+    'DPSGW': { x: 400, y: 420 },
+    'DPSRS': { x: 400, y: 650 },
+    'DPSHV': { x: 100, y: 650 },
+    'IED1': { x: -100, y: 950 },
+    'IED2': { x: 150, y: 950 },
+    'DPSMV': { x: 700, y: 650 },
+    'IED3': { x: 750, y: 950 },
+    'IED4': { x: 1000, y: 950 },
+    'DPSHMI': { x: 450, y: 950 },
+    'DSS1GW': { x: -200, y: 250 },
+    'IDS': { x: -500, y: 260 },
+    'DSS1RTU': { x: -150, y: 500 },
+    'DSS2GW': { x: 1000, y: 250 },
+    'DSS2RTU': { x: 1050, y: 500 },
+};
+
+const deviceImages = {
+    'CONTROLSW': '/images/control-sw.png',
+    'CONTROL': '/images/control-scada.png',
+    'WANR1': '/images/wan-r1.png',
+    'WANR2': '/images/wan-r2.png',
+    'DPSGW': '/images/dps-gw.png',
+    'DPSRS': '/images/dps-rs.png',
+    'DPSHV': '/images/dps-hv.png',
+    'IED1': '/images/ied1.png',
+    'IED2': '/images/ied2.png',
+    'DPSMV': '/images/dps-mv.png',
+    'IED3': '/images/ied3.png',
+    'IED4': '/images/ied4.png',
+    'DPSHMI': '/images/dps-hmi.png',
+    'DSS1GW': '/images/dss1-gw.png',
+    'IDS': '/images/ids.png',
+    'DSS1RTU': '/images/dss1-rtu.png',
+    'DSS2GW': '/images/dss2-gw.png',
+    'DSS2RTU': '/images/dss2-rtu.png',
+};
 
 const NetworkOverview = () => {
     const [isNetworkConnected, setIsNetworkConnected] = useState(false);
@@ -9,6 +52,8 @@ const NetworkOverview = () => {
     const [activeNodeCount, setActiveNodeCount] = useState(0);
     const [isSimulationRunning, setIsSimulationRunning] = useState(false); // Tracks simulation status
     const [simulationStatus, setSimulationStatus] = useState(""); // To display simulation status messages
+    const [nodes, setNodes] = useState([]);
+    const [edges, setEdges] = useState([]);
 
     // Function to fetch node counts
     const fetchNodeCounts = async () => {
@@ -21,6 +66,70 @@ const NetworkOverview = () => {
         }
     };
 
+    const fetchTopologyData = async () => {
+        try {
+            const response = await axios.get('http://localhost:5050/api/topology');
+            const devices = response.data.devices;
+            const links = response.data.links;
+
+            const mappedNodes = devices.map(device => {
+                const position = devicePositions[device.name] || { x: 0, y: 0 };
+                const image = deviceImages[device.name] || null;
+                const status = device.status;
+
+                let nodeStyle = {};
+                if (!isSimulationRunning) {
+                    nodeStyle = { opacity: 0.5 };
+                } else if (isSimulationRunning && !isNetworkConnected) {
+                    nodeStyle = { opacity: 1.0 };
+                } else if (isSimulationRunning && isNetworkConnected) {
+                    if (device.device_type === 'switch' && status === 'connected') {
+                        nodeStyle = { border: '2px solid green' };
+                    }
+                }
+
+                return {
+                    id: device.name,
+                    type: 'customNode',
+                    position: position,
+                    data: {
+                        label: device.name,
+                        image: image,
+                        deviceType: device.device_type,
+                        status: device.status,
+                        functionsInstalled: Array(5).fill(null),
+                    },
+                    style: nodeStyle
+                };
+            });
+
+            const mappedEdges = links.map(link => {
+                const sourceDevice = devices.find(d => d.id.toString() === link.source_device_id.toString());
+                const targetDevice = devices.find(d => d.id.toString() === link.destination_device_id.toString());
+
+                if (sourceDevice && targetDevice) {
+                    return {
+                        id: `e${sourceDevice.name}-${targetDevice.name}`,
+                        source: sourceDevice.name,
+                        target: targetDevice.name,
+                        animated: isSimulationRunning,
+                        style:{
+                            stroke: isSimulationRunning ? '#000' : '#ccc',
+                            opacity: isSimulationRunning ? 1.0 : 0.5,
+                        },
+                    };
+                } else {
+                    return null;
+                }
+            }).filter(edge => edge != null);
+
+            setNodes(mappedNodes);
+            setEdges(mappedEdges)
+        } catch (error) {
+            console.error('Error fetching topology data:', error);
+        }
+    };
+
     // Handler to toggle simulation
     const toggleSimulation = async () => {
         if (isSimulationRunning) {
@@ -28,7 +137,7 @@ const NetworkOverview = () => {
                 await axios.post('http://localhost:5100/api/stop_sim');
                 setIsSimulationRunning(false);
                 setSimulationStatus("Simulation Stopped.");
-                setTimeout(fetchNodeCounts, 5000);
+                setTimeout(() => { fetchNodeCounts(); fetchTopologyData(); }, 5000);
             } catch (error) {
                 console.error("Error stopping simulation:", error);
                 setSimulationStatus("Failed to stop simulation.");
@@ -38,7 +147,7 @@ const NetworkOverview = () => {
                 await axios.post('http://localhost:5100/api/start_sim');
                 setIsSimulationRunning(true);
                 setSimulationStatus("Simulation Started.");
-                setTimeout(fetchNodeCounts, 5000);
+                setTimeout(() => { fetchNodeCounts(); fetchTopologyData(); }, 5000);
             } catch (error) {
                 console.error("Error starting simulation:", error);
                 setSimulationStatus("Failed to start the simulation.")
@@ -51,7 +160,7 @@ const NetworkOverview = () => {
             try {
                 await axios.post('http://localhost:5050/api/stop');
                 setIsNetworkConnected(false);
-                setTimeout(fetchNodeCounts, 5000);
+                setTimeout(() => { fetchNodeCounts(); fetchTopologyData(); }, 5000);
             } catch (error) {
                 console.error("Error stopping controller:", error);
             }
@@ -59,7 +168,7 @@ const NetworkOverview = () => {
             try {
                 await axios.post('http://localhost:5050/api/start');
                 setIsNetworkConnected(true);
-                setTimeout(fetchNodeCounts, 5000);
+                setTimeout(() => { fetchNodeCounts(); fetchTopologyData(); }, 5000);
             } catch (error) {
                 console.error("Error starting controller:", error);
             }
@@ -128,7 +237,12 @@ const NetworkOverview = () => {
                         {/* Placeholder for network topology visualization */}
                         <Box sx={{ mt: 2, height: '94%', overflow: 'hidden', position: 'relative', backgroundColor: '#f5f5f5' }}>
                             {/* Network topology will be displayed here. */}
-                            <NetworkTopology />
+                            <NetworkTopology
+                                nodes={nodes}
+                                edges={edges} 
+                                isSimulationRunning={isSimulationRunning}
+                                isNetworkConnected={isNetworkConnected}
+                            />
                         </Box>
                     </Paper>
                 </Grid>
