@@ -4,6 +4,7 @@ import { ReactFlow, Background, Controls, MiniMap,
 import Node from "./Node"; 
 import TopologySidebar from "./TopologySidebar";
 import "@xyflow/react/dist/style.css"; 
+import CustomEdge from "../common/CustomEdge";
 
 const NetworkTopology = ( { nodes, edges, isSimulationRunning, isNetworkConnected } ) => { 
     const [currentNodes, setCurrentNodes, onNodesChange] = useNodesState(nodes); 
@@ -14,6 +15,10 @@ const NetworkTopology = ( { nodes, edges, isSimulationRunning, isNetworkConnecte
         setCurrentEdges(edges);
     }, [nodes, edges, setCurrentNodes, setCurrentEdges]);
 
+    const edgeTypes = {
+        custom: CustomEdge,
+    };
+
     return ( 
         <div style={{ width: '100%', height: '1000px', display: 'flex' }}> 
             <div style={{ width: '80%', height: '100%', border: '1px solid #ccc' }}> 
@@ -22,7 +27,8 @@ const NetworkTopology = ( { nodes, edges, isSimulationRunning, isNetworkConnecte
                     edges={currentEdges} 
                     onNodesChange={onNodesChange} 
                     onEdgesChange={onEdgesChange} 
-                    nodeTypes={{ customNode: Node }} 
+                    nodeTypes={{ customNode: Node }}
+                    edgeTypes={edgeTypes} 
                     style={{ width: '100%', height: '90%' }} 
                     fitView 
                     nodesDraggable={false} 

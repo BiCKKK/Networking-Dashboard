@@ -108,12 +108,282 @@ const NetworkOverview = () => {
                 const targetDevice = devices.find(d => d.id.toString() === link.destination_device_id.toString());
 
                 if (sourceDevice && targetDevice) {
+                    const isClickable = link.is_clickable;
+                    if (sourceDevice.name === 'CONTROLSW' && targetDevice.name === 'CONTROL') {
+                        return {
+                            id: `e${sourceDevice.name}-${targetDevice.name}`,
+                            source: sourceDevice.name,
+                            sourceHandle: 'right-source',
+                            target: targetDevice.name,
+                            targetHandle: 'left-target',
+                            animated: isSimulationRunning,
+                            style: {
+                                stroke: isSimulationRunning ? '#000' : '#ccc',
+                                opacity: isSimulationRunning ? 1.0 : 0.5,
+                            },
+                        };
+                    }
+
+                    if (sourceDevice.name === 'WANR1' && targetDevice.name === 'CONTROLSW') {
+                        return {
+                            id: `e${sourceDevice.name}-${targetDevice.name}`,
+                            source: sourceDevice.name,
+                            sourceHandle: 'top-source',
+                            target: targetDevice.name,
+                            targetHandle: 'bottom-target',
+                            animated: isSimulationRunning,
+                            style: {
+                                stroke: isSimulationRunning ? '#000' : '#ccc',
+                                opacity: isSimulationRunning ? 1.0 : 0.5,
+                            },
+                        };
+                    }
+                    
+                    if (sourceDevice.name === 'WANR2' && targetDevice.name === 'CONTROLSW') {
+                        return {
+                            id: `e${sourceDevice.name}-${targetDevice.name}`,
+                            source: sourceDevice.name,
+                            sourceHandle: 'top-source',
+                            target: targetDevice.name,
+                            targetHandle: 'bottom-target',
+                            animated: isSimulationRunning,
+                            style: {
+                                stroke: isSimulationRunning ? '#000' : '#ccc',
+                                opacity: isSimulationRunning ? 1.0 : 0.5,
+                            },
+                        };
+                    }
+
+                    if (sourceDevice.name === 'WANR1' && targetDevice.name === 'DSS1GW') {
+                        return {
+                            id: `e${sourceDevice.name}-${targetDevice.name}`,
+                            source: sourceDevice.name,
+                            sourceHandle: 'left-source',
+                            target: targetDevice.name,
+                            targetHandle: 'right-target',
+                            animated: isSimulationRunning,
+                            style: {
+                                stroke: isSimulationRunning ? '#000' : '#ccc',
+                                opacity: isSimulationRunning ? 1.0 : 0.5,
+                            },
+                        };
+                    }
+                    
+                    if (sourceDevice.name === 'WANR2' && targetDevice.name === 'DSS2GW') {
+                        return {
+                            id: `e${sourceDevice.name}-${targetDevice.name}`,
+                            source: sourceDevice.name,
+                            sourceHandle: 'right-source',
+                            target: targetDevice.name,
+                            targetHandle: 'left-target',
+                            animated: isSimulationRunning,
+                            style: {
+                                stroke: isSimulationRunning ? '#000' : '#ccc',
+                                opacity: isSimulationRunning ? 1.0 : 0.5,
+                            },
+                        };
+                    }
+
+                    if (sourceDevice.name === 'DSS1GW' && targetDevice.name === 'IDS') {
+                        return {
+                            id: `e${sourceDevice.name}-${targetDevice.name}`,
+                            source: sourceDevice.name,
+                            sourceHandle: 'left-source',
+                            target: targetDevice.name,
+                            targetHandle: 'right-target',
+                            animated: isSimulationRunning,
+                            style: {
+                                stroke: isSimulationRunning ? '#000' : '#ccc',
+                                opacity: isSimulationRunning ? 1.0 : 0.5,
+                            },
+                        };
+                    }
+
+                    if (sourceDevice.name === 'DPSGW' && targetDevice.name === 'CONTROLSW') {
+                        return {
+                            id: `e${sourceDevice.name}-${targetDevice.name}`,
+                            source: sourceDevice.name,
+                            sourceHandle: 'top-source',
+                            target: targetDevice.name,
+                            targetHandle: 'bottom-target',
+                            animated: isSimulationRunning,
+                            style: {
+                                stroke: isSimulationRunning ? '#000' : '#ccc',
+                                opacity: isSimulationRunning ? 1.0 : 0.5,
+                            },
+                        };
+                    }
+
+                    if (sourceDevice.name === 'DPSRS' && targetDevice.name === 'DPSHV') {
+                        return {
+                            id: `e${sourceDevice.name}-${targetDevice.name}`,
+                            source: sourceDevice.name,
+                            sourceHandle: 'left-source',
+                            target: targetDevice.name,
+                            targetHandle: 'right-target',
+                            animated: isSimulationRunning,
+                            style: {
+                                stroke: isSimulationRunning ? '#000' : '#ccc',
+                                opacity: isSimulationRunning ? 1.0 : 0.5,
+                            },
+                        };
+                    }
+
+                    if (sourceDevice.name === 'DPSRS' && targetDevice.name === 'DPSMV') {
+                        return {
+                            id: `e${sourceDevice.name}-${targetDevice.name}`,
+                            source: sourceDevice.name,
+                            sourceHandle: 'right-source',
+                            target: targetDevice.name,
+                            targetHandle: 'left-target',
+                            animated: isSimulationRunning,
+                            style: {
+                                stroke: isSimulationRunning ? '#000' : '#ccc',
+                                opacity: isSimulationRunning ? 1.0 : 0.5,
+                            },
+                        };
+                    }
+
+                    if (sourceDevice.name === 'DPSHMI' && targetDevice.name === 'DPSRS') {
+                        return {
+                            id: `e${sourceDevice.name}-${targetDevice.name}`,
+                            source: sourceDevice.name,
+                            sourceHandle: 'top-source',
+                            target: targetDevice.name,
+                            targetHandle: 'bottom-target',
+                            animated: isSimulationRunning,
+                            style: {
+                                stroke: isSimulationRunning ? '#000' : '#ccc',
+                                opacity: isSimulationRunning ? 1.0 : 0.5,
+                            },
+                        };
+                    }
+
+                    if (sourceDevice.name === 'DSS1GW' && targetDevice.name === 'DSS1RTU') {
+                        return {
+                            id: `e${sourceDevice.name}-${targetDevice.name}`,
+                            source: sourceDevice.name,
+                            sourceHandle: 'bottom-source', 
+                            target: targetDevice.name,
+                            targetHandle: 'top-target',
+                            animated: isSimulationRunning,
+                            label: isClickable ? 'Clickable' : link.link_type || '',
+                            type: isClickable ? 'custom' : 'default',
+                            style: {
+                                stroke: isSimulationRunning ? '#000' : '#ccc',
+                                opacity: isSimulationRunning ? 1.0 : 0.5,
+                            },
+                            data: {
+                                onClick: () => handleEdgeClick(`e${sourceDevice.name}-${targetDevice.name}`),
+                            },
+                        }
+                    }
+
+                    if (sourceDevice.name === 'DSS2GW' && targetDevice.name === 'DSS2RTU') {
+                        return {
+                            id: `e${sourceDevice.name}-${targetDevice.name}`,
+                            source: sourceDevice.name,
+                            sourceHandle: 'bottom-source', 
+                            target: targetDevice.name,
+                            targetHandle: 'top-target',
+                            animated: isSimulationRunning,
+                            label: isClickable ? 'Clickable' : link.link_type || '',
+                            type: isClickable ? 'custom' : 'default',
+                            style: {
+                                stroke: isSimulationRunning ? '#000' : '#ccc',
+                                opacity: isSimulationRunning ? 1.0 : 0.5,
+                            },
+                            data: {
+                                onClick: () => handleEdgeClick(`e${sourceDevice.name}-${targetDevice.name}`),
+                            },
+                        }
+                    }
+
+                    if (sourceDevice.name === 'IED1' && targetDevice.name === 'DPSHV') {
+                        return {
+                            id: `e${sourceDevice.name}-${targetDevice.name}`,
+                            source: sourceDevice.name,
+                            sourceHandle: 'top-source', 
+                            target: targetDevice.name,
+                            targetHandle: 'left-target',
+                            animated: isSimulationRunning,
+                            label: isClickable ? 'Clickable' : link.link_type || '',
+                            type: isClickable ? 'custom' : 'default',
+                            style: {
+                                stroke: isSimulationRunning ? '#000' : '#ccc',
+                                opacity: isSimulationRunning ? 1.0 : 0.5,
+                            },
+                            data: {
+                                onClick: () => handleEdgeClick(`e${sourceDevice.name}-${targetDevice.name}`),
+                            },
+                        }
+                    }
+                    if (sourceDevice.name === 'IED2' && targetDevice.name === 'DPSHV') {
+                        return {
+                            id: `e${sourceDevice.name}-${targetDevice.name}`,
+                            source: sourceDevice.name,
+                            sourceHandle: 'top-source', 
+                            target: targetDevice.name,
+                            targetHandle: 'bottom-target',
+                            animated: isSimulationRunning,
+                            label: isClickable ? 'Clickable' : link.link_type || '',
+                            type: isClickable ? 'custom' : 'default',
+                            style: {
+                                stroke: isSimulationRunning ? '#000' : '#ccc',
+                                opacity: isSimulationRunning ? 1.0 : 0.5,
+                            },
+                            data: {
+                                onClick: () => handleEdgeClick(`e${sourceDevice.name}-${targetDevice.name}`),
+                            },
+                        }
+                    }
+                    if (sourceDevice.name === 'IED3' && targetDevice.name === 'DPSMV') {
+                        return {
+                            id: `e${sourceDevice.name}-${targetDevice.name}`,
+                            source: sourceDevice.name,
+                            sourceHandle: 'top-source', 
+                            target: targetDevice.name,
+                            targetHandle: 'bottom-target',
+                            animated: isSimulationRunning,
+                            label: isClickable ? 'Clickable' : link.link_type || '',
+                            type: isClickable ? 'custom' : 'default',
+                            style: {
+                                stroke: isSimulationRunning ? '#000' : '#ccc',
+                                opacity: isSimulationRunning ? 1.0 : 0.5,
+                            },
+                            data: {
+                                onClick: () => handleEdgeClick(`e${sourceDevice.name}-${targetDevice.name}`),
+                            },
+                        }
+                    }
+                    if (sourceDevice.name === 'IED4' && targetDevice.name === 'DPSMV') {
+                        return {
+                            id: `e${sourceDevice.name}-${targetDevice.name}`,
+                            source: sourceDevice.name,
+                            sourceHandle: 'top-source', 
+                            target: targetDevice.name,
+                            targetHandle: 'right-target',
+                            animated: isSimulationRunning,
+                            label: isClickable ? 'Clickable' : link.link_type || '',
+                            type: isClickable ? 'custom' : 'default',
+                            style: {
+                                stroke: isSimulationRunning ? '#000' : '#ccc',
+                                opacity: isSimulationRunning ? 1.0 : 0.5,
+                            },
+                            data: {
+                                onClick: () => handleEdgeClick(`e${sourceDevice.name}-${targetDevice.name}`),
+                            },
+                        }
+                    }
+                    // Default Edge Mapping for Other Edges
                     return {
                         id: `e${sourceDevice.name}-${targetDevice.name}`,
                         source: sourceDevice.name,
+                        sourceHandle: 'bottom-source', 
                         target: targetDevice.name,
+                        targetHandle: 'top-target',
                         animated: isSimulationRunning,
-                        style:{
+                        style: {
                             stroke: isSimulationRunning ? '#000' : '#ccc',
                             opacity: isSimulationRunning ? 1.0 : 0.5,
                         },
@@ -122,7 +392,7 @@ const NetworkOverview = () => {
                     return null;
                 }
             }).filter(edge => edge != null);
-
+            
             setNodes(mappedNodes);
             setEdges(mappedEdges)
         } catch (error) {
