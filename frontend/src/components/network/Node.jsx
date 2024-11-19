@@ -3,6 +3,7 @@ import { Handle } from '@xyflow/react';
 import ProgressBar from '../network/ProgressBar'; 
 
 const Node = ({ data }) => {
+    const isSwitch = data.deviceType === 'switch';
 
     return ( 
         <div style={{ 
@@ -24,12 +25,20 @@ const Node = ({ data }) => {
                 /> 
             )} 
             <div style={{ fontWeight: 'bold' }}>{data.label}</div> 
-            <ProgressBar 
+            {isSwitch && (
+                <ProgressBar 
                 functionsInstalled={data.functionsInstalled}
                 onRemoveFunction={data.onRemoveFunction}
-            /> 
-            <Handle type="target" position="top" style={{ background: '#555' }} /> 
-            <Handle type="source" position="bottom" style={{ background: '#555' }} /> 
+                />
+            )}
+            <Handle type="target" position="top" style={{ background: '#555' }} id="top-target" />
+            <Handle type="target" position="bottom" style={{ background: '#555' }} id="bottom-target" />
+            <Handle type="target" position="left" style={{ background: '#555' }} id="left-target" /> 
+            <Handle type="target" position="right" style={{ background: '#555' }} id="right-target" /> 
+            <Handle type="source" position="top" style={{ background: '#555' }} id="top-source" /> 
+            <Handle type="source" position="bottom" style={{ background: '#555' }} id="bottom-source" />
+            <Handle type="source" position="left" style={{ background: '#555' }} id="left-source" />
+            <Handle type="source" position="right" style={{ background: '#555' }} id="right-source" /> 
         </div> 
     ); 
 }; 

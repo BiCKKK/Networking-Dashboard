@@ -6,15 +6,47 @@ const NetworkOverview = () => {
     const [isNetworkConnected, setIsNetworkConnected] = useState(false);
     const [nodeCount, setNodeCount] = useState(0);
     const [activeNodeCount, setActiveNodeCount] = useState(0);
+    const [isSimulationRunning, setIsSimulationRunning] = useState(false); // Tracks simulation status
+    const [simulationStatus, setSimulationStatus] = useState(""); // To display simulation status messages
+
     const toggleNetworkConnection = () => {
         setIsNetworkConnected(!isNetworkConnected);
     };
+
+    // Handler to toggle simulation
+    const toggleSimulation = () => {
+        if (isSimulationRunning) {
+            // Logic to stop the simulation
+            setIsSimulationRunning(false);
+            setSimulationStatus("Simulation Stopped.");
+        } else {
+            // Logic to start the simulation
+            setIsSimulationRunning(true);
+            setSimulationStatus("Simulation Started.")
+        }
+    }
+
     return (
-        <Grid container spacing={3} mt={-10} >
-            {/* Connect to the Network Box */}
-            <Grid item xs={12} sm={6} lg={6}>
-                <Paper elevation={3} sx={{ p: 3, textAlign: 'center', height: '100px' }}>
-                    <Typography variant="h6" sx={{ mt: -1.5 }}>Connect to Network</Typography>
+        <Grid container spacing={3} mt={-8} >
+            {/* Network Simulation Box */}
+            <Grid item xs={12} sm={5} lg={5}>
+                <Paper elevation={3} sx={{ p: 3, textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'center', minheight: '150px' }}>
+                    <Typography variant="h6" sx={{ mt: -1.5 }}>Network Simulation</Typography>
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={toggleSimulation}
+                        sx={{ mt: 2, backgroundColor: '#212121' }}
+                    >
+                        {simulationStatus ? 'Stop Simulation' : 'Start Mininet Network Simulation'}
+                    </Button>
+                </Paper>
+            </Grid>
+
+            {/* Controller Box */}
+            <Grid item xs={12} sm={5} lg={5}>
+                <Paper elevation={3} sx={{ p: 3, textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'center', minheight: '150px' }}>
+                    <Typography variant="h6" sx={{ mt: -1.5 }}>Connect the eBPF Controller</Typography>
                     <Typography variant="body1" sx={{ mt: 1 }}>
                         {isNetworkConnected ? 'Network Connected' : 'Network not Connected!'}
                     </Typography>
@@ -30,8 +62,8 @@ const NetworkOverview = () => {
             </Grid>
 
             {/* Nodes Connected Box */}
-            <Grid item xs={12} sm={6} lg={6}>
-                <Paper elevation={3} sx={{ p: 3, textAlign: 'center', height: '100px' }}>
+            <Grid item xs={12} sm={2} lg={2}>
+                <Paper elevation={3} sx={{ p: 3, textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'center', minheight: '150px' }}>
                     <Typography variant="h6" sx={{ mt: -1.5 }}>Active nodes</Typography>
                     <Typography variant="h3" sx={{ mt: 1 }}>
                         {activeNodeCount}
