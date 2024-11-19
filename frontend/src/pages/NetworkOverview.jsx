@@ -1,5 +1,5 @@
 import { Box, Button, Grid, Paper, Typography } from "@mui/material";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import NetworkTopology from "../components/network/NetworkTopology";
 import axios from "axios";
 
@@ -10,21 +10,14 @@ const NetworkOverview = () => {
     const [isSimulationRunning, setIsSimulationRunning] = useState(false); // Tracks simulation status
     const [simulationStatus, setSimulationStatus] = useState(""); // To display simulation status messages
 
-    const toggleNetworkConnection = async () => {
-        if (isNetworkConnected) {
-            try {
-                await axios.post('http://localhost:5050/api/stop');
-                setIsNetworkConnected(false);
-            } catch (error) {
-                console.error("Error stopping controller:", error);
-            }
-        } else {
-            try {
-                await axios.post('http://localhost:5050/api/start');
-                setIsNetworkConnected(true);
-            } catch (error) {
-                console.error("Error starting controller:", error);
-            }
+    // Function to fetch node counts
+    const fetchNodeCounts = async () => {
+        try {
+            const response = await axios.get('http://localhost:5050/api/node_counts');
+            setNodeCount(response.data.node_count);
+            setActiveNodeCount(response.data.active_node_count);
+        } catch (error) {
+            console.error("Error fetching node counts:", error);
         }
     };
 
@@ -35,6 +28,7 @@ const NetworkOverview = () => {
                 await axios.post('http://localhost:5100/api/stop_sim');
                 setIsSimulationRunning(false);
                 setSimulationStatus("Simulation Stopped.");
+                setTimeout(fetchNodeCounts, 5000);
             } catch (error) {
                 console.error("Error stopping simulation:", error);
                 setSimulationStatus("Failed to stop simulation.");
@@ -44,12 +38,33 @@ const NetworkOverview = () => {
                 await axios.post('http://localhost:5100/api/start_sim');
                 setIsSimulationRunning(true);
                 setSimulationStatus("Simulation Started.");
+                setTimeout(fetchNodeCounts, 5000);
             } catch (error) {
                 console.error("Error starting simulation:", error);
                 setSimulationStatus("Failed to start the simulation.")
             }
         }
     }
+
+    const toggleNetworkConnection = async () => {
+        if (isNetworkConnected) {
+            try {
+                await axios.post('http://localhost:5050/api/stop');
+                setIsNetworkConnected(false);
+                setTimeout(fetchNodeCounts, 5000);
+            } catch (error) {
+                console.error("Error stopping controller:", error);
+            }
+        } else {
+            try {
+                await axios.post('http://localhost:5050/api/start');
+                setIsNetworkConnected(true);
+                setTimeout(fetchNodeCounts, 5000);
+            } catch (error) {
+                console.error("Error starting controller:", error);
+            }
+        }
+    };
 
     return (
         <Grid container spacing={3} mt={-8} >
