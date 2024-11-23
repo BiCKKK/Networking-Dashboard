@@ -1,5 +1,5 @@
 import { Box, Button, Grid, Paper, Typography } from "@mui/material";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import NetworkTopology from "../components/network/NetworkTopology";
 import axios from "axios";
 import "@xyflow/react/dist/style.css"; 
@@ -72,6 +72,11 @@ const NetworkOverview = () => {
             const devices = response.data.devices;
             const links = response.data.links;
 
+            const existingFunctionsInstalled = {};
+            nodes.forEach(node => {
+                existingFunctionsInstalled[node.id] = node.data.functionsInstalled;
+            });
+
             const mappedNodes = devices.map(device => {
                 const position = devicePositions[device.name] || { x: 0, y: 0 };
                 const image = deviceImages[device.name] || null;
@@ -88,6 +93,10 @@ const NetworkOverview = () => {
                     }
                 }
 
+                const existingNode = nodes.find(n => n.id === device.name);
+                const functionsInstalled = existingNode
+                    ? existingNode.data.functionsInstalled : [];
+
                 return {
                     id: device.name,
                     type: 'customNode',
@@ -97,9 +106,10 @@ const NetworkOverview = () => {
                         image: image,
                         deviceType: device.device_type,
                         status: device.status,
-                        functionsInstalled: [],
-                        onFunctionInstall: (functionData) => handleFunctionInstall(device.name, functionData),
-                        onRemoveFunction: (slotIndex) => handleRemoveFunction(device.name, slotIndex),
+                        dpid: device.dpid,
+                        functionsInstalled: functionsInstalled,
+                        onFunctionInstall: (functionData) => handleFunctionInstall(device.name, functionData, device.dpid),
+                        onRemoveFunction: (slotIndex) => handleRemoveFunction(device.name, slotIndex, device.dpid),
                         isActive: isSimulationRunning && isNetworkConnected && device.device_type === 'switch' && status === 'connected'
                     },
                     style: nodeStyle
@@ -403,6 +413,22 @@ const NetworkOverview = () => {
         }
     };
 
+    useEffect(() => {
+        let intervalId;
+
+        if (isSimulationRunning && isNetworkConnected) {
+            intervalId = setInterval(() => {
+                fetchNodeCounts();
+                fetchTopologyData();
+            }, 5000);
+        }
+        return () => {
+            if (intervalId) {
+                clearInterval(intervalId);
+            }
+        };
+    }, [isSimulationRunning, isNetworkConnected])
+
     // Handler to toggle simulation
     const toggleSimulation = async () => {
         if (isSimulationRunning) {
@@ -448,41 +474,70 @@ const NetworkOverview = () => {
         }
     };
 
-    const handleFunctionInstall = (nodeName, functionData) => {
-        setNodes((prevNodes) => 
-            prevNodes.map((node) => {
-                if (node.id === nodeName) {
-                    const updatedFunctions = [...node.data.functionsInstalled, functionData];
-                    return {
-                        ...node,
-                        data: {
-                            ...node.data,
-                            functionsInstalled: updatedFunctions,
-                        },
-                    };
-                }
-                return node;
-            })
-        );
+    const handleFunctionInstall = (nodeName, functionData, dpid) => {
+        const node = nodes.find(n => n.id === nodeName);
+        const currentFunctions = node.data.functionsInstalled || [];
+        const nextIndex = currentFunctions.length;
+
+        console.log('Installing function with data:', {
+            dpid: dpid,
+            function_name: functionData.type,
+            function_index: nextIndex
+        });
+
+        axios.post('http://localhost:5050/api/install', {
+            dpid: dpid,
+            function_name: functionData.type,
+            function_index: 0
+        }).then(response => {
+            setNodes((prevNodes) => 
+                prevNodes.map((node) => {
+                    if (node.id === nodeName) {
+                        const updatedFunctions = [...node.data.functionsInstalled, functionData];
+                        return {
+                            ...node,
+                            data: {
+                                ...node.data,
+                                functionsInstalled: updatedFunctions,
+                            },
+                        };
+                    }
+                    return node;
+                })
+            );
+        }).catch(error => {
+            console.error('Error installing function:', error);
+            alert('Failed to install function: ' + error.response.data.error)
+        });
     };
 
-    const handleRemoveFunction = (nodeName, slotIndex) => {
-        setNodes((prevNodes) =>
-            prevNodes.map((node) => {
-                if (node.id === nodeName) {
-                    const updatedFunctions = [...node.data.functionsInstalled];
-                    updatedFunctions.splice(slotIndex, 1);
-                    return {
-                        ...node,
-                        data: {
-                            ...node.data,
-                            functionsInstalled: updatedFunctions,
-                        },
-                    };
-                }
-                return node;
-            })
-        );
+    const handleRemoveFunction = (nodeName, slotIndex, dpid) => {
+        const node = nodes.find(n => n.id === nodeName);
+        const functionData = node.data.functionsInstalled[slotIndex];
+
+        axios.post('http://localhost:5050/api/remove', {
+            dpid: dpid,
+            function_index: 0
+        }).then(response => {
+            setNodes((prevNodes) =>
+                prevNodes.map((node) => {
+                    if (node.id === nodeName) {
+                        const updatedFunctions = [...node.data.functionsInstalled];
+                        updatedFunctions.splice(slotIndex, 1);
+                        return {
+                            ...node,
+                            data: {
+                                ...node.data,
+                                functionsInstalled: updatedFunctions,
+                            },
+                        };
+                    }
+                    return node;
+                })
+            );
+        }).catch(error => {
+            console.error('Error removing function:', error);
+        })
     };
 
     return (

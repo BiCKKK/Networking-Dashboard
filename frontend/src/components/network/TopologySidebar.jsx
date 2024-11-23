@@ -2,13 +2,12 @@ import React from "react";
 import NetworkFunction from "./NetworkFunction";
 
 const functions = [ 
-    { type: 'Forwarding', color: 'green', label: 'Forwarding' }, 
-    { type: 'Mirroring', color: 'blue', label: 'Mirroring' }, 
-    { type: 'ACL', color: 'red', label: 'Access Control' }, 
-    { type: 'Asset Discovery', color: 'purple', label: 'Asset Discovery' }, 
-    { type: 'DoS_Mitigation', color: 'orange', label: 'DOS Mitigation' },
-    { type: 'Monitoring', color: 'brown', label: 'Monitoring' }, 
-    { type: 'Goose_Analyser', color: 'orange', label: 'GOOSE Analyser' },  
+    { type: 'forwarding', color: 'green', label: 'Forwarding' }, 
+    { type: 'mirror', color: 'blue', label: 'Mirroring' },  
+    { type: 'assetdisc', color: 'purple', label: 'Asset Discovery' }, 
+    { type: 'dos_mitigation', color: 'orange', label: 'DOS Mitigation' },
+    { type: 'monitoring', color: 'brown', label: 'Monitoring' }, 
+    { type: 'goose_analyser', color: 'gray', label: 'GOOSE Analyser' },  
 ]; 
 
 const TopologySidebar = () => { 

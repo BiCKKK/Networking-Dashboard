@@ -35,12 +35,12 @@ const ProgressBar = ({ functionsInstalled, onRemoveFunction }) => {
                     sx={{ 
                         width: '40px', 
                         height: '40px', 
-                        backgroundColor: functionsInstalled[idx] ? functionsInstalled[idx].color : '#e0e0e0', 
+                        backgroundColor: func ? func.color : '#e0e0e0', 
                         border: '1px solid #ccc', 
                         display: 'flex', 
                         alignItems: 'center', 
                         justifyContent: 'center', 
-                        cursor: functionsInstalled[idx] ? 'pointer' : 'default', 
+                        cursor: func ? 'pointer' : 'default', 
                         position: 'relative' 
                     }}  
                     onContextMenu={(event) => func && handleContextMenu(event, idx)}
