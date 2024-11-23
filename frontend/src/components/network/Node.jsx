@@ -18,8 +18,22 @@ const Node = ({ data }) => {
         nodeStyle.opacity = 0.5;
     }
 
+    const handleDragOver = (event) => {
+        if (isSwitch && data.isActive) {
+            event.preventDefault();
+        }
+    };
+
+    const handleDrop = (event) => {
+        event.preventDefault();
+        const functionData = JSON.parse(event.dataTransfer.getData('application/json'));
+        if (data.onFunctionInstall) {
+            data.onFunctionInstall(functionData);
+        }
+    };
+
     return ( 
-        <div style={nodeStyle} data-id={data.label}> 
+        <div onDragOver={handleDragOver} onDrop={handleDrop} style={nodeStyle} data-id={data.label}> 
             {data.image && ( 
                 <img 
                     src={data.image} 

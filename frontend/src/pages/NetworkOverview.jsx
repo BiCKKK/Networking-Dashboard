@@ -97,7 +97,10 @@ const NetworkOverview = () => {
                         image: image,
                         deviceType: device.device_type,
                         status: device.status,
-                        functionsInstalled: Array(5).fill(null),
+                        functionsInstalled: [],
+                        onFunctionInstall: (functionData) => handleFunctionInstall(device.name, functionData),
+                        onRemoveFunction: (slotIndex) => handleRemoveFunction(device.name, slotIndex),
+                        isActive: isSimulationRunning && isNetworkConnected && device.device_type === 'switch' && status === 'connected'
                     },
                     style: nodeStyle
                 };
@@ -443,6 +446,43 @@ const NetworkOverview = () => {
                 console.error("Error starting controller:", error);
             }
         }
+    };
+
+    const handleFunctionInstall = (nodeName, functionData) => {
+        setNodes((prevNodes) => 
+            prevNodes.map((node) => {
+                if (node.id === nodeName) {
+                    const updatedFunctions = [...node.data.functionsInstalled, functionData];
+                    return {
+                        ...node,
+                        data: {
+                            ...node.data,
+                            functionsInstalled: updatedFunctions,
+                        },
+                    };
+                }
+                return node;
+            })
+        );
+    };
+
+    const handleRemoveFunction = (nodeName, slotIndex) => {
+        setNodes((prevNodes) =>
+            prevNodes.map((node) => {
+                if (node.id === nodeName) {
+                    const updatedFunctions = [...node.data.functionsInstalled];
+                    updatedFunctions.splice(slotIndex, 1);
+                    return {
+                        ...node,
+                        data: {
+                            ...node.data,
+                            functionsInstalled: updatedFunctions,
+                        },
+                    };
+                }
+                return node;
+            })
+        );
     };
 
     return (

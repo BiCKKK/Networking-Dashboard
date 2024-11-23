@@ -1,19 +1,26 @@
-import { useDrag } from "react-dnd"; 
+import React from "react";
 
-const NetworkFunction = ({ type, color, label }) => { 
-  const [{ isDragging }, drag] = useDrag(() => ({ 
-    type: 'FUNCTION', 
-    item: { type }, 
-    collect: (monitor) => ({ 
-      isDragging: !!monitor.isDragging(), 
-    }), 
-  })); 
-
-  return ( 
-    <div ref={drag} style={{ opacity: isDragging ? 0.5 : 1, cursor: 'move', backgroundColor: color, padding: '8px', borderRadius: '4px' }}> 
-      {label} 
-    </div> 
-  ); 
-}; 
+const NetworkFunction = ({ functionData }) => {
+  const handleDragStart = (event) => {
+    event.dataTransfer.setData('application/json', JSON.stringify(functionData));
+  };
+  
+  return (
+    <div
+      draggable
+      onDragStart={handleDragStart}
+      style={{
+        cursor: 'move',
+        backgroundColor: functionData.color,
+        color: '#fff',
+        padding: '10px',
+        borderRadius: '5px',
+        marginBottom: '5px',
+      }}
+    >
+      {functionData.label}
+    </div>
+  );
+};
 
 export default NetworkFunction; 

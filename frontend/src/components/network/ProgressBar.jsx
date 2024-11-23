@@ -27,14 +27,9 @@ const ProgressBar = ({ functionsInstalled, onRemoveFunction }) => {
         handleCloseContextMenu();
     }
 
-    const displayFunctions = [...functionsInstalled];
-        if (displayFunctions.length < 5) {
-            displayFunctions.push(...Array(5 - displayFunctions.length).fill(null));
-        }
-
     return ( 
         <Box sx={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
-            {displayFunctions.map((func, idx) => (
+            {functionsInstalled.map((func, idx) => (
                 <Box 
                     key={idx} 
                     sx={{ 
