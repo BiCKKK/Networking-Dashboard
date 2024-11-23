@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import NetworkTopology from "../components/network/NetworkTopology";
 import axios from "axios";
 import "@xyflow/react/dist/style.css"; 
+import { networkFunctions } from "../function_colours";
 
 const devicePositions = {
     'CONTROLSW': { x: 400, y: 50 },
@@ -72,15 +73,20 @@ const NetworkOverview = () => {
             const devices = response.data.devices;
             const links = response.data.links;
 
-            const existingFunctionsInstalled = {};
-            nodes.forEach(node => {
-                existingFunctionsInstalled[node.id] = node.data.functionsInstalled;
-            });
-
             const mappedNodes = devices.map(device => {
                 const position = devicePositions[device.name] || { x: 0, y: 0 };
                 const image = deviceImages[device.name] || null;
                 const status = device.status;
+
+                const functionsInstalled = device.functions.map(func => {
+                    const functionInfo = networkFunctions.find(f => f.type === func.function_name);
+                    return {
+                        id: func.id,
+                        type: func.function_name, 
+                        status: func.status,
+                        color: functionInfo ? functionInfo.color : '#e0e0e0'
+                    }
+                })
 
                 let nodeStyle = {};
                 if (!isSimulationRunning) {
@@ -92,10 +98,6 @@ const NetworkOverview = () => {
                         nodeStyle = { border: '2px solid green' };
                     }
                 }
-
-                const existingNode = nodes.find(n => n.id === device.name);
-                const functionsInstalled = existingNode
-                    ? existingNode.data.functionsInstalled : [];
 
                 return {
                     id: device.name,
@@ -475,39 +477,17 @@ const NetworkOverview = () => {
     };
 
     const handleFunctionInstall = (nodeName, functionData, dpid) => {
-        const node = nodes.find(n => n.id === nodeName);
-        const currentFunctions = node.data.functionsInstalled || [];
-        const nextIndex = currentFunctions.length;
-
-        console.log('Installing function with data:', {
-            dpid: dpid,
-            function_name: functionData.type,
-            function_index: nextIndex
-        });
-
         axios.post('http://localhost:5050/api/install', {
             dpid: dpid,
             function_name: functionData.type,
-            function_index: 0
-        }).then(response => {
-            setNodes((prevNodes) => 
-                prevNodes.map((node) => {
-                    if (node.id === nodeName) {
-                        const updatedFunctions = [...node.data.functionsInstalled, functionData];
-                        return {
-                            ...node,
-                            data: {
-                                ...node.data,
-                                functionsInstalled: updatedFunctions,
-                            },
-                        };
-                    }
-                    return node;
-                })
-            );
-        }).catch(error => {
+        })
+        .then(response => {
+            console.log('Function installation successful:', response.data);
+            fetchTopologyData();
+        })
+        .catch(error => {
             console.error('Error installing function:', error);
-            alert('Failed to install function: ' + error.response.data.error)
+            alert('Failed to install function: ' + error.response?.data?.error || error.message);
         });
     };
 
