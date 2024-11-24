@@ -492,12 +492,9 @@ const NetworkOverview = () => {
     };
 
     const handleRemoveFunction = (nodeName, slotIndex, dpid) => {
-        const node = nodes.find(n => n.id === nodeName);
-        const functionData = node.data.functionsInstalled[slotIndex];
-
         axios.post('http://localhost:5050/api/remove', {
             dpid: dpid,
-            function_index: 0
+            function_index: slotIndex,
         }).then(response => {
             setNodes((prevNodes) =>
                 prevNodes.map((node) => {
@@ -517,6 +514,7 @@ const NetworkOverview = () => {
             );
         }).catch(error => {
             console.error('Error removing function:', error);
+            alert("Failed to remove functon: " + error.response?.data?.error || error.message)
         })
     };
 
