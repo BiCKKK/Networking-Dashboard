@@ -1,4 +1,4 @@
-import { Box, Button, Grid, Paper, Typography } from "@mui/material";
+import { Box, Button, Grid, Paper, Typography, TextField, MenuItem } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import NetworkTopology from "../components/network/NetworkTopology";
 import axios from "axios";
@@ -55,6 +55,12 @@ const NetworkOverview = () => {
     const [simulationStatus, setSimulationStatus] = useState(""); // To display simulation status messages
     const [nodes, setNodes] = useState([]);
     const [edges, setEdges] = useState([]);
+
+    const [viewMode, setViewMode] = useState('entireNetwork');
+    const [selectedNode, setSelectedNode] = useState('');
+    const [timeRange, setTimeRange] = useState('lastHour');
+    const [nodeOptions, setNodeOptions] = useState([]);
+    const [monitoringData, setMonitoringData] = useState([]);
 
     // Function to fetch node counts
     const fetchNodeCounts = async () => {
@@ -282,14 +288,9 @@ const NetworkOverview = () => {
                             target: targetDevice.name,
                             targetHandle: 'top-target',
                             animated: isSimulationRunning,
-                            label: isClickable ? 'Clickable' : link.link_type || '',
-                            type: isClickable ? 'custom' : 'default',
                             style: {
                                 stroke: isSimulationRunning ? '#000' : '#ccc',
                                 opacity: isSimulationRunning ? 1.0 : 0.5,
-                            },
-                            data: {
-                                onClick: () => handleEdgeClick(`e${sourceDevice.name}-${targetDevice.name}`),
                             },
                         }
                     }
@@ -302,14 +303,9 @@ const NetworkOverview = () => {
                             target: targetDevice.name,
                             targetHandle: 'top-target',
                             animated: isSimulationRunning,
-                            label: isClickable ? 'Clickable' : link.link_type || '',
-                            type: isClickable ? 'custom' : 'default',
                             style: {
                                 stroke: isSimulationRunning ? '#000' : '#ccc',
                                 opacity: isSimulationRunning ? 1.0 : 0.5,
-                            },
-                            data: {
-                                onClick: () => handleEdgeClick(`e${sourceDevice.name}-${targetDevice.name}`),
                             },
                         }
                     }
@@ -322,14 +318,9 @@ const NetworkOverview = () => {
                             target: targetDevice.name,
                             targetHandle: 'left-target',
                             animated: isSimulationRunning,
-                            label: isClickable ? 'Clickable' : link.link_type || '',
-                            type: isClickable ? 'custom' : 'default',
                             style: {
                                 stroke: isSimulationRunning ? '#000' : '#ccc',
                                 opacity: isSimulationRunning ? 1.0 : 0.5,
-                            },
-                            data: {
-                                onClick: () => handleEdgeClick(`e${sourceDevice.name}-${targetDevice.name}`),
                             },
                         }
                     }
@@ -341,14 +332,9 @@ const NetworkOverview = () => {
                             target: targetDevice.name,
                             targetHandle: 'bottom-target',
                             animated: isSimulationRunning,
-                            label: isClickable ? 'Clickable' : link.link_type || '',
-                            type: isClickable ? 'custom' : 'default',
                             style: {
                                 stroke: isSimulationRunning ? '#000' : '#ccc',
                                 opacity: isSimulationRunning ? 1.0 : 0.5,
-                            },
-                            data: {
-                                onClick: () => handleEdgeClick(`e${sourceDevice.name}-${targetDevice.name}`),
                             },
                         }
                     }
@@ -360,14 +346,9 @@ const NetworkOverview = () => {
                             target: targetDevice.name,
                             targetHandle: 'bottom-target',
                             animated: isSimulationRunning,
-                            label: isClickable ? 'Clickable' : link.link_type || '',
-                            type: isClickable ? 'custom' : 'default',
                             style: {
                                 stroke: isSimulationRunning ? '#000' : '#ccc',
                                 opacity: isSimulationRunning ? 1.0 : 0.5,
-                            },
-                            data: {
-                                onClick: () => handleEdgeClick(`e${sourceDevice.name}-${targetDevice.name}`),
                             },
                         }
                     }
@@ -379,14 +360,9 @@ const NetworkOverview = () => {
                             target: targetDevice.name,
                             targetHandle: 'right-target',
                             animated: isSimulationRunning,
-                            label: isClickable ? 'Clickable' : link.link_type || '',
-                            type: isClickable ? 'custom' : 'default',
                             style: {
                                 stroke: isSimulationRunning ? '#000' : '#ccc',
                                 opacity: isSimulationRunning ? 1.0 : 0.5,
-                            },
-                            data: {
-                                onClick: () => handleEdgeClick(`e${sourceDevice.name}-${targetDevice.name}`),
                             },
                         }
                     }
@@ -409,7 +385,8 @@ const NetworkOverview = () => {
             }).filter(edge => edge != null);
             
             setNodes(mappedNodes);
-            setEdges(mappedEdges)
+            setEdges(mappedEdges);
+
         } catch (error) {
             console.error('Error fetching topology data:', error);
         }
@@ -461,7 +438,6 @@ const NetworkOverview = () => {
             try {
                 await axios.post('http://localhost:5050/api/stop');
                 setIsNetworkConnected(false);
-                setTimeout(() => { fetchNodeCounts(); fetchTopologyData(); }, 5000);
             } catch (error) {
                 console.error("Error stopping controller:", error);
             }
@@ -469,7 +445,6 @@ const NetworkOverview = () => {
             try {
                 await axios.post('http://localhost:5050/api/start');
                 setIsNetworkConnected(true);
-                setTimeout(() => { fetchNodeCounts(); fetchTopologyData(); }, 5000);
             } catch (error) {
                 console.error("Error starting controller:", error);
             }
@@ -517,6 +492,62 @@ const NetworkOverview = () => {
             alert("Failed to remove functon: " + error.response?.data?.error || error.message)
         })
     };
+
+    
+
+    useEffect(() => {
+        const fetchNodes = async () => {
+            try {
+                const response= await axios.get('http://localhost:5050/api/topology');
+                const devices = response.data.devices;
+
+                const options = devices.map(device => ({
+                    label: device.name,
+                    value: device.id,
+                }));
+
+                setNodeOptions(options);
+            } catch (error) {
+                console.error('Error fetching node options:', error);
+            }
+        };
+        fetchNodes();
+    }, []);
+
+    useEffect(() => {
+        const fetchMonitoringData = async () => {
+            try {
+                let url = 'http://localhost:5050/api/monitoring_data';
+                const params = {
+                    limit: 100,
+                };
+                if (viewMode === 'specificNode' && selectedNode) {
+                    params.device_id = selectedNode;
+                }
+
+                const now = new Date();
+                let startTime;
+
+                if (timeRange === 'lastHour') {
+                    startTime = new Date(now.getTime() - 60 * 60 * 1000);
+                } else if (timeRange === 'last24Hours') {
+                    startTime = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+                } else if (timeRange === 'lastWeek') {
+                    startTime = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                }
+
+                if (startTime) {
+                    params.start_time = startTime.toISOString();
+                }
+
+                const response = await axios.get(url, { params });
+                setMonitoringData(response.data);
+            } catch (error) {
+                console.error('Error fetching monitoring data:', error)
+            }
+        };
+        fetchMonitoringData();
+    }, [viewMode, selectedNode, timeRange])
 
     return (
         <Grid container spacing={3} mt={-8} >
@@ -586,6 +617,65 @@ const NetworkOverview = () => {
                                 isSimulationRunning={isSimulationRunning}
                                 isNetworkConnected={isNetworkConnected}
                             />
+                        </Box>
+                    </Paper>
+                </Grid>
+            </Grid>
+
+            <Grid container spacing={3} mt={0} mx={0}>
+                <Grid item xs={12}>
+                    {/* Network Topology Box */}
+                    <Paper elevation={3} sx={{ p: 3 }}>
+                        <Grid container spacing={3}>
+                            <Grid item xs={12} md={6}>
+                                <TextField
+                                    select
+                                    fullWidth
+                                    label="View Mode"
+                                    value={viewMode}
+                                    onChange={(e) => setViewMode(e.target.value)}
+                                >
+                                    <MenuItem value="entireNetwork">Entire Network</MenuItem>
+                                    <MenuItem value="specificNode">Specific Node</MenuItem>
+                                </TextField>
+                            </Grid>
+                            {viewMode === "specificNode" && (
+                                <Grid item xs={12} md={6}>
+                                    <TextField
+                                        select 
+                                        fullWidth
+                                        label="Select Node"
+                                        value={selectedNode}
+                                        onChange={(e) => setSelectedNode(e.target.value)}
+                                    >
+                                        {nodeOptions.map((node) => (
+                                            <MenuItem key={node.value} value={node.value}>
+                                                {node.label}
+                                            </MenuItem>
+                                        ))}
+                                    </TextField>
+                                </Grid>
+                            )}
+                        </Grid>
+                    </Paper>
+                </Grid>
+
+                <Grid  item xs={12}>
+                    <Paper elevation={3} sx={{ p: 3, height: "400px" }}>
+                        <Typography variant="h6">Main Traffic Graph</Typography>
+                        <Box
+                            sx={{
+                                mt:2,
+                                height: "90%",
+                                backgroundColor: "#f5f5f5",
+                                display: "flex",
+                                justifyContent: "center",
+                                alignItems: "center",
+                            }}
+                        >
+                            <Typography variant="body2">
+                                Main traffic graph here.
+                            </Typography>
                         </Box>
                     </Paper>
                 </Grid>

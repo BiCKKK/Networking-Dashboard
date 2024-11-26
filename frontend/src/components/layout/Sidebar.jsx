@@ -1,19 +1,13 @@
-import React, { useState } from "react";
+import React from "react";
 import { Drawer, List, ListItem, ListItemIcon, ListItemText } from "@mui/material";
 import NetworkCheckIcon from "@mui/icons-material/NetworkCheck";
 import TrafficIcon from "@mui/icons-material/Traffic";
-import BugReportIcon from "@mui/icons-material/BugReport";
-import DescriptionIcon from "@mui/icons-material/Description";
-import SecurityIcon from "@mui/icons-material/Security";
 import { NavLink } from "react-router-dom";
 
 const Sidebar = ({ open, onClose}) => {
     const menuItems = [
         { text: 'Network Overview', icon: <NetworkCheckIcon />, path: '/' },
         { text: 'Traffic Analysis', icon: <TrafficIcon />, path: '/traffic-analysis' },
-        { text: 'Packet Inspection', icon: <BugReportIcon />, path: '/packet-inspection' },
-        { text: 'Logs', icon: <DescriptionIcon />, path: '/logs' },
-        { text: 'Intrusion Detection', icon: <SecurityIcon />, path: '/intrusion-detection' },
     ];
     return (
         <Drawer
