@@ -48,22 +48,6 @@ const deviceImages = {
     'DSS2RTU': '/images/dss2-rtu.png',
 };
 
-const TrafficGraph = ({data}) => (
-    <ResponsiveContainer width="90%" height="90%">
-        <LineChart data={data}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="timestamp" />
-            <YAxis 
-                tickFormatter={(value) => `${value} Kbps`}
-                label={{ value: "Bandwidth (Kbps)", angle: -90, position: "insideLeft" }}
-            />
-            <RechartsToolTip />
-            <Legend />
-            <Line type="monotone" dataKey="bandwidth" stroke="#8884d8" />
-        </LineChart>
-    </ResponsiveContainer>
-);
-
 const NetworkOverview = () => {
     const [isNetworkConnected, setIsNetworkConnected] = useState(false);
     const [nodeCount, setNodeCount] = useState(0);
@@ -73,11 +57,10 @@ const NetworkOverview = () => {
     const [nodes, setNodes] = useState([]);
     const [edges, setEdges] = useState([]);
 
-    const [viewMode, setViewMode] = useState('entireNetwork');
-    const [selectedNode, setSelectedNode] = useState('');
-    const [nodeOptions, setNodeOptions] = useState([]);
-    const [monitoringData, setMonitoringData] = useState([]);
-    const [deviceNameToIdMap, setDeviceNameToIdMap] = useState({});
+    const [selectedNode, setSelectedNode] = useState("");
+    const [viewMode, setViewMode] = useState()
+    const [trafficData, setTrafficData] = useState([]);
+    const [lastUpdate, setLastUpdate] = useState(Date.now());
 
     // Function to fetch node counts
     const fetchNodeCounts = async () => {
@@ -95,23 +78,6 @@ const NetworkOverview = () => {
             const response = await axios.get('http://localhost:5050/api/topology');
             const devices = response.data.devices;
             const links = response.data.links;
-
-            const nameToID = {};
-            devices.forEach((device) => {
-                if (device.dpid) {
-                    nameToID[device.name] = device.dpid;
-                } else {
-                    nameToID[device.name] = device.id;
-                }
-            });
-            setDeviceNameToIdMap(nameToID);
-
-            setNodeOptions(
-                devices.map((device) => ({
-                    value: device.name,
-                    label: device.name,
-                }))
-            );
 
             const mappedNodes = devices.map(device => {
                 const position = devicePositions[device.name] || { x: 0, y: 0 };
@@ -485,44 +451,52 @@ const NetworkOverview = () => {
         }
     };
 
-    const fetchMonitoringData = async () => {
-        if (viewMode === "specificNode" && !selectedNode) {
-            return;
-        }
+    const graphColor = "#8884d8";
+
+    const fetchTrafficData = async () => {
+        if (!selectedNode) return;
+      
         try {
-            const params = {
-                limit: 100
-            };
-            if (viewMode === "specificNode" && selectedNode) {
-                const dpid = deviceNameToIdMap[selectedNode];
-                if (!dpid) {
-                    console.error(`No mapping found for device: ${selectedNode}`);
-                    return;
-                }
-                params.device_id = dpid;
-            }
-            const response = await axios.get("http://localhost:5050/api/monitoring_data", {params});
-            setMonitoringData(response.data);
+            const response = await axios.get('http://localhost:5050/api/monitoring_data', {
+                params: {
+                   device_id: selectedNode,
+                   limit: 60
+               }
+            });
+
+            const formattedData = response.data.map(point => ({
+               timestamp: new Date(point.timestamp).getTime(),
+               bandwidth: point.bandwidth,
+            }));
+
+
+           setTrafficData(formattedData);
+           setLastUpdate(Date.now());
         } catch (error) {
-            console.error("Error fetching monitoring data:", error);
+           console.error("Error fetching traffic data:", error);
         }
     };
 
     useEffect(() => {
         let intervalId;
-
-        const fetchDataPeriodically = () => {
-            fetchMonitoringData();
-        };
-
-        if (viewMode === "entireNetwork" || (viewMode === "specificNode" && selectedNode)) {
-            fetchMonitoringData();
-            intervalId = setInterval(fetchMonitoringData, 2000);
+      
+        if (isSimulationRunning && isNetworkConnected && selectedNode) {
+           fetchTrafficData();
+           intervalId = setInterval(fetchTrafficData, 1000);
         }
         return () => {
-            if (intervalId) clearInterval(intervalId);
+            if (intervalId) {
+               clearInterval(intervalId);
+            }
         };
-    }, [viewMode, selectedNode]);
+    }, [isSimulationRunning, isNetworkConnected, selectedNode]);
+
+    const nodeOptions = nodes
+        .filter(node => node.data.deviceType === 'switch') // Only show switches
+        .map(node => ({
+           value: node.data.dpid, // Use dpid as the value
+           label: node.data.label
+        }));
 
     function handleFunctionInstall(nodeName, functionData, dpid) {
         axios.post('http://localhost:5050/api/install', {
@@ -643,35 +617,25 @@ const NetworkOverview = () => {
                 <Grid item xs={12}>
                     <Paper elevation={3} sx={{ p: 3 }}>
                         <Grid container spacing={3}>
-                            <Grid item xs={12} md={6}>
+                            <Grid item xs={12}>
                                 <TextField
                                     select
                                     fullWidth
-                                    label="View Mode"
-                                    value={viewMode}
-                                    onChange={(e) => setViewMode(e.target.value)}
+                                    label="Select Node to Monitor"
+                                    value={selectedNode}
+                                    onChange={(e) => setSelectedNode(e.target.value)}
+                                    disabled={!isSimulationRunning || !isNetworkConnected}
                                 >
-                                    <MenuItem value="entireNetwork">Entire Network</MenuItem>
-                                    <MenuItem value="specificNode">Specific Node</MenuItem>
+                                    <MenuItem value="">
+                                        <em>Select a node</em>
+                                    </MenuItem>
+                                    {nodeOptions.map((node) => (
+                                        <MenuItem key={node.value} value={node.value}>
+                                            {node.label}
+                                        </MenuItem>
+                                    ))}
                                 </TextField>
                             </Grid>
-                            {viewMode === "specificNode" && (
-                                <Grid item xs={12} md={6}>
-                                    <TextField
-                                        select 
-                                        fullWidth
-                                        label="Select Node"
-                                        value={selectedNode}
-                                        onChange={(e) => setSelectedNode(e.target.value)}
-                                    >
-                                        {nodeOptions.map((node) => (
-                                            <MenuItem key={node.value} value={node.value}>
-                                                {node.label}
-                                            </MenuItem>
-                                        ))}
-                                    </TextField>
-                                </Grid>
-                            )}
                         </Grid>
                     </Paper>
                 </Grid>
@@ -681,7 +645,7 @@ const NetworkOverview = () => {
                         <Typography variant="h6">Network Traffic Graph</Typography>
                         <Box
                             sx={{
-                                mt:2,
+                                mt: 2,
                                 height: "90%",
                                 backgroundColor: "#f5f5f5",
                                 display: "flex",
@@ -689,10 +653,46 @@ const NetworkOverview = () => {
                                 alignItems: "center",
                             }}
                         >
-                            {monitoringData.length > 0 ? (
-                                <TrafficGraph data={monitoringData}/>
+                            {!selectedNode ? (
+                                <Typography variant="body1" color="textSecondary">
+                                    Select a node to view its traffic data
+                                </Typography>
                             ) : (
-                                <Typography variant="body2">No data available for the selected view.</Typography>
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <LineChart data={trafficData}>
+                                        <CartesianGrid strokeDasharray="3 3" />
+                                        <XAxis
+                                            dataKey="timestamp"
+                                            type="number"
+                                            domain={['auto', 'auto']}
+                                            tickFormatter={(timestamp) =>
+                                                new Date(timestamp).toLocaleTimeString()
+                                            }
+                                        />
+                                        <YAxis
+                                            label={{
+                                                value: 'Bandwidth (bytes/s)',
+                                                angle: -90,
+                                                position: 'insideLeft',
+                                                style: { textAnchor: 'middle' }
+                                            }}
+                                        />
+                                        <RechartsToolTip
+                                            labelFormatter={(timestamp) =>
+                                                new Date(timestamp).toLocaleTimeString()
+                                            }
+                                            formatter={(value) => [`${value} bytes/s`, 'Bandwidth']}
+                                        />
+                                        <Line
+                                            type="monotone"
+                                            dataKey="bandwidth"
+                                            stroke={graphColor}
+                                            dot={false}
+                                            name="Bandwidth"
+                                            isAnimationActive={false} 
+                                        />
+                                    </LineChart>
+                                </ResponsiveContainer>
                             )}
                         </Box>
                     </Paper>
