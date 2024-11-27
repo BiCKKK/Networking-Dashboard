@@ -1,9 +1,10 @@
-import { Box, Button, Grid, Paper, Typography, TextField, MenuItem } from "@mui/material";
+import { Box, Button, Grid, Paper, Typography, TextField, MenuItem, Tooltip } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import NetworkTopology from "../components/network/NetworkTopology";
 import axios from "axios";
 import "@xyflow/react/dist/style.css"; 
 import { networkFunctions } from "../function_colours";
+import { CartesianGrid, LineChart, XAxis, YAxis, Tooltip as RechartsToolTip, Legend, Line, ResponsiveContainer } from "recharts";
 
 const devicePositions = {
     'CONTROLSW': { x: 400, y: 50 },
@@ -47,20 +48,36 @@ const deviceImages = {
     'DSS2RTU': '/images/dss2-rtu.png',
 };
 
+const TrafficGraph = ({data}) => (
+    <ResponsiveContainer width="90%" height="90%">
+        <LineChart data={data}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="timestamp" />
+            <YAxis 
+                tickFormatter={(value) => `${value} Kbps`}
+                label={{ value: "Bandwidth (Kbps)", angle: -90, position: "insideLeft" }}
+            />
+            <RechartsToolTip />
+            <Legend />
+            <Line type="monotone" dataKey="bandwidth" stroke="#8884d8" />
+        </LineChart>
+    </ResponsiveContainer>
+);
+
 const NetworkOverview = () => {
     const [isNetworkConnected, setIsNetworkConnected] = useState(false);
     const [nodeCount, setNodeCount] = useState(0);
     const [activeNodeCount, setActiveNodeCount] = useState(0);
-    const [isSimulationRunning, setIsSimulationRunning] = useState(false); // Tracks simulation status
-    const [simulationStatus, setSimulationStatus] = useState(""); // To display simulation status messages
+    const [isSimulationRunning, setIsSimulationRunning] = useState(false); 
+    const [simulationStatus, setSimulationStatus] = useState(""); 
     const [nodes, setNodes] = useState([]);
     const [edges, setEdges] = useState([]);
 
     const [viewMode, setViewMode] = useState('entireNetwork');
     const [selectedNode, setSelectedNode] = useState('');
-    const [timeRange, setTimeRange] = useState('lastHour');
     const [nodeOptions, setNodeOptions] = useState([]);
     const [monitoringData, setMonitoringData] = useState([]);
+    const [deviceNameToIdMap, setDeviceNameToIdMap] = useState({});
 
     // Function to fetch node counts
     const fetchNodeCounts = async () => {
@@ -78,6 +95,23 @@ const NetworkOverview = () => {
             const response = await axios.get('http://localhost:5050/api/topology');
             const devices = response.data.devices;
             const links = response.data.links;
+
+            const nameToID = {};
+            devices.forEach((device) => {
+                if (device.dpid) {
+                    nameToID[device.name] = device.dpid;
+                } else {
+                    nameToID[device.name] = device.id;
+                }
+            });
+            setDeviceNameToIdMap(nameToID);
+
+            setNodeOptions(
+                devices.map((device) => ({
+                    value: device.name,
+                    label: device.name,
+                }))
+            );
 
             const mappedNodes = devices.map(device => {
                 const position = devicePositions[device.name] || { x: 0, y: 0 };
@@ -451,20 +485,59 @@ const NetworkOverview = () => {
         }
     };
 
-    const handleFunctionInstall = (nodeName, functionData, dpid) => {
+    const fetchMonitoringData = async () => {
+        if (viewMode === "specificNode" && !selectedNode) {
+            return;
+        }
+        try {
+            const params = {
+                limit: 100
+            };
+            if (viewMode === "specificNode" && selectedNode) {
+                const dpid = deviceNameToIdMap[selectedNode];
+                if (!dpid) {
+                    console.error(`No mapping found for device: ${selectedNode}`);
+                    return;
+                }
+                params.device_id = dpid;
+            }
+            const response = await axios.get("http://localhost:5050/api/monitoring_data", {params});
+            setMonitoringData(response.data);
+        } catch (error) {
+            console.error("Error fetching monitoring data:", error);
+        }
+    };
+
+    useEffect(() => {
+        let intervalId;
+
+        const fetchDataPeriodically = () => {
+            fetchMonitoringData();
+        };
+
+        if (viewMode === "entireNetwork" || (viewMode === "specificNode" && selectedNode)) {
+            fetchMonitoringData();
+            intervalId = setInterval(fetchMonitoringData, 2000);
+        }
+        return () => {
+            if (intervalId) clearInterval(intervalId);
+        };
+    }, [viewMode, selectedNode]);
+
+    function handleFunctionInstall(nodeName, functionData, dpid) {
         axios.post('http://localhost:5050/api/install', {
             dpid: dpid,
             function_name: functionData.type,
         })
-        .then(response => {
-            console.log('Function installation successful:', response.data);
-            fetchTopologyData();
-        })
-        .catch(error => {
-            console.error('Error installing function:', error);
-            alert('Failed to install function: ' + error.response?.data?.error || error.message);
-        });
-    };
+            .then(response => {
+                console.log('Function installation successful:', response.data);
+                fetchTopologyData();
+            })
+            .catch(error => {
+                console.error('Error installing function:', error);
+                alert('Failed to install function: ' + error.response?.data?.error || error.message);
+            });
+    }
 
     const handleRemoveFunction = (nodeName, slotIndex, dpid) => {
         axios.post('http://localhost:5050/api/remove', {
@@ -492,62 +565,6 @@ const NetworkOverview = () => {
             alert("Failed to remove functon: " + error.response?.data?.error || error.message)
         })
     };
-
-    
-
-    useEffect(() => {
-        const fetchNodes = async () => {
-            try {
-                const response= await axios.get('http://localhost:5050/api/topology');
-                const devices = response.data.devices;
-
-                const options = devices.map(device => ({
-                    label: device.name,
-                    value: device.id,
-                }));
-
-                setNodeOptions(options);
-            } catch (error) {
-                console.error('Error fetching node options:', error);
-            }
-        };
-        fetchNodes();
-    }, []);
-
-    useEffect(() => {
-        const fetchMonitoringData = async () => {
-            try {
-                let url = 'http://localhost:5050/api/monitoring_data';
-                const params = {
-                    limit: 100,
-                };
-                if (viewMode === 'specificNode' && selectedNode) {
-                    params.device_id = selectedNode;
-                }
-
-                const now = new Date();
-                let startTime;
-
-                if (timeRange === 'lastHour') {
-                    startTime = new Date(now.getTime() - 60 * 60 * 1000);
-                } else if (timeRange === 'last24Hours') {
-                    startTime = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-                } else if (timeRange === 'lastWeek') {
-                    startTime = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-                }
-
-                if (startTime) {
-                    params.start_time = startTime.toISOString();
-                }
-
-                const response = await axios.get(url, { params });
-                setMonitoringData(response.data);
-            } catch (error) {
-                console.error('Error fetching monitoring data:', error)
-            }
-        };
-        fetchMonitoringData();
-    }, [viewMode, selectedNode, timeRange])
 
     return (
         <Grid container spacing={3} mt={-8} >
@@ -624,7 +641,6 @@ const NetworkOverview = () => {
 
             <Grid container spacing={3} mt={0} mx={0}>
                 <Grid item xs={12}>
-                    {/* Network Topology Box */}
                     <Paper elevation={3} sx={{ p: 3 }}>
                         <Grid container spacing={3}>
                             <Grid item xs={12} md={6}>
@@ -662,7 +678,7 @@ const NetworkOverview = () => {
 
                 <Grid  item xs={12}>
                     <Paper elevation={3} sx={{ p: 3, height: "400px" }}>
-                        <Typography variant="h6">Main Traffic Graph</Typography>
+                        <Typography variant="h6">Network Traffic Graph</Typography>
                         <Box
                             sx={{
                                 mt:2,
@@ -673,9 +689,11 @@ const NetworkOverview = () => {
                                 alignItems: "center",
                             }}
                         >
-                            <Typography variant="body2">
-                                Main traffic graph here.
-                            </Typography>
+                            {monitoringData.length > 0 ? (
+                                <TrafficGraph data={monitoringData}/>
+                            ) : (
+                                <Typography variant="body2">No data available for the selected view.</Typography>
+                            )}
                         </Box>
                     </Paper>
                 </Grid>
