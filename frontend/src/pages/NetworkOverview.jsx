@@ -492,9 +492,9 @@ const NetworkOverview = () => {
     }, [isSimulationRunning, isNetworkConnected, selectedNode]);
 
     const nodeOptions = nodes
-        .filter(node => node.data.deviceType === 'switch') // Only show switches
+        .filter(node => node.data.deviceType === 'switch') 
         .map(node => ({
-           value: node.data.dpid, // Use dpid as the value
+           value: node.data.dpid, 
            label: node.data.label
         }));
 

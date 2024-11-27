@@ -1,16 +1,27 @@
-import React from 'react'; 
+import React, { useState } from 'react'; 
 import { Handle } from '@xyflow/react'; 
 import ProgressBar from '../network/ProgressBar'; 
+import AssetDiscoveryTooltip from './AssetDiscoveryTooltip';
 
 const Node = ({ data }) => {
-    const isSwitch = data.deviceType === 'switch';
+    const [showTooltip, setShowTooltip] = useState(false);
 
-    let nodeStyle = {
-        padding: '10px', background: '#f9f9f9',
-        borderRadius: '8px', border: '1px solid #ccc',
-        textAlign: 'center', minWidth: '120px', 
-        minHeight: '120px', position: 'relative'
-    }
+    const isSwitch = data.deviceType === 'switch';
+    const isAssetDiscoveryInstalled = data.functionsInstalled.some(
+        (func) => func.type === 'assetdisc'
+    );
+
+    const nodeStyle = {
+        padding: '10px',
+        background: '#f9f9f9',
+        borderRadius: '8px',
+        border: data.status === 'connected' ? '2px solid green' : '1px solid #ccc',
+        textAlign: 'center',
+        minWidth: '120px',
+        minHeight: '120px',
+        position: 'relative',
+        opacity: data.status === 'connected' ? 1 : 0.5,
+    };
 
     if (data.status === 'connected') {
         nodeStyle.border = '2px solid green';
@@ -33,7 +44,9 @@ const Node = ({ data }) => {
     };
 
     return ( 
-        <div onDragOver={handleDragOver} onDrop={handleDrop} style={nodeStyle} data-id={data.label}> 
+        <div onDragOver={handleDragOver} onDrop={handleDrop} style={nodeStyle} data-id={data.label}
+            onMouseEnter={() => setShowTooltip(true)}
+            onMouseLeave={() => setShowTooltip(false)}> 
             {data.image && ( 
                 <img 
                     src={data.image} 
@@ -53,6 +66,11 @@ const Node = ({ data }) => {
                 onRemoveFunction={data.onRemoveFunction}
                 />
             )}
+
+            {showTooltip && isSwitch && data.status === 'connected' && isAssetDiscoveryInstalled && (
+                <AssetDiscoveryTooltip dpid={data.dpid} nodeName={data.label} />
+            )}
+
             <Handle type="target" position="top" style={{ background: '#555' }} id="top-target" />
             <Handle type="target" position="bottom" style={{ background: '#555' }} id="bottom-target" />
             <Handle type="target" position="left" style={{ background: '#555' }} id="left-target" /> 
