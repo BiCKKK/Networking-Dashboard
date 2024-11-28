@@ -1,16 +1,20 @@
+// Custom ReactFlow Node component
 import React, { useState } from 'react'; 
 import { Handle } from '@xyflow/react'; 
 import ProgressBar from '../network/ProgressBar'; 
 import AssetDiscoveryTooltip from './AssetDiscoveryTooltip';
 
+// Node component represents each node in the network topology visualisation.
 const Node = ({ data }) => {
     const [showTooltip, setShowTooltip] = useState(false);
 
+    // Determine if the node is a switch or has the Asset Discovery function installed.
     const isSwitch = data.deviceType === 'switch';
     const isAssetDiscoveryInstalled = data.functionsInstalled.some(
         (func) => func.type === 'assetdisc'
     );
 
+    // Define the styling of the node based on its connection status.
     const nodeStyle = {
         padding: '10px',
         background: '#f9f9f9',
@@ -29,12 +33,14 @@ const Node = ({ data }) => {
         nodeStyle.opacity = 0.5;
     }
 
+    // Handle drag-over events to enable dropping functions onto the node.
     const handleDragOver = (event) => {
         if (isSwitch && data.isActive) {
             event.preventDefault();
         }
     };
 
+    // Handle drop events to install a function on the node.
     const handleDrop = (event) => {
         event.preventDefault();
         const functionData = JSON.parse(event.dataTransfer.getData('application/json'));
@@ -66,11 +72,13 @@ const Node = ({ data }) => {
                 onRemoveFunction={data.onRemoveFunction}
                 />
             )}
-
+            
+            {/*Show tooltip for connected switches with Asset Discovery installed.*/}
             {showTooltip && isSwitch && data.status === 'connected' && isAssetDiscoveryInstalled && (
                 <AssetDiscoveryTooltip dpid={data.dpid} nodeName={data.label} />
             )}
-
+            
+            {/*Add handles for connecting nodes in the network topology.*/}
             <Handle type="target" position="top" style={{ background: '#555' }} id="top-target" />
             <Handle type="target" position="bottom" style={{ background: '#555' }} id="bottom-target" />
             <Handle type="target" position="left" style={{ background: '#555' }} id="left-target" /> 

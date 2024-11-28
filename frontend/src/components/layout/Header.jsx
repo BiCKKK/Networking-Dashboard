@@ -1,3 +1,5 @@
+// Renders the application header with a menu button, logo search bar, and action icons (notifications, avatar).
+// Search, notifications, and user avatars are for future versions of the application.
 import React from "react";
 import { AppBar, Avatar, Box, IconButton, InputAdornment, TextField, Toolbar } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
@@ -9,6 +11,7 @@ const Header = ({ onMenuClick }) => {
     return (
         <AppBar position="fixed" sx={{ backgroundColor: '#212121', zIndex: (theme) => theme.zIndex.drawer + 1 }}>
             <Toolbar>
+                {/*Menu button for toggling the sidebar*/}
                 <IconButton
                     edge="start"
                     color="inherit"
@@ -18,12 +21,14 @@ const Header = ({ onMenuClick }) => {
                 >
                     <MenuIcon />    
                 </IconButton>
+                {/*Logo diplayed in the header*/}
                 <Box
                     component="img"
                     src={logo}
                     alt="SGFabric Logo"
                     sx={{ height: 60, width: 120, ml: 4, mr: 2, verticalAlign: 'middle' }}
                 />
+                {/*Search bar*/}
                 <TextField 
                     variant="outlined"
                     placeholder="Search..."
@@ -42,6 +47,7 @@ const Header = ({ onMenuClick }) => {
                         ),
                     }}
                 />
+                {/*Icons for notifications and user avatar*/}
                 <Box sx={{ display: 'flex', alignItems: 'center', ml: 'auto'}}>
                     <IconButton color="inherit">
                         <NotificationsIcon />

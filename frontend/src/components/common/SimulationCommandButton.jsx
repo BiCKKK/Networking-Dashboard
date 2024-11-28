@@ -1,8 +1,10 @@
+// Provides a floating action button that displays a menu of network simulation commands when clicked.
 import React, { useRef, useState } from "react"; 
 import { Fab, Box, Menu, MenuItem, Typography } from "@mui/material"; 
 import PlayArrowIcon from "@mui/icons-material/PlayArrow"; 
 import axios from "axios";
 
+// List of commands with corresponding API endpoints
 const commands = [
     { name: 'Packet Count', endpoint: 'http://localhost:5100/api/packet_count' },
     { name: 'Start GOOSE Communication', endpoint: 'http://localhost:5100/api/start_goose' },
@@ -16,24 +18,24 @@ const commands = [
 ]
 
 const SimulationCommands = () => { 
-    const [menuAnchor, setMenuAnchor] = useState(null);
+    const [menuAnchor, setMenuAnchor] = useState(null); // State to control the menu anchor
 
     const handleButtomClick = (event) => {
-        setMenuAnchor(event.currentTarget);
+        setMenuAnchor(event.currentTarget); // Open the menu at the button position
     };
 
     const handleCloseMenu = () => {
-        setMenuAnchor(null);
+        setMenuAnchor(null); // Close the meny
     };
 
     const handleCommandTrigger = async (command) => {
         try {
-            const response = await axios.post(command.endpoint);
-            alert(`${command.name} triggered succesfully!`);
+            const response = await axios.post(command.endpoint); // Send POST request to the command's endpoint
+            alert(`${command.name} triggered succesfully!`); // Show success message
         } catch (error) {
-            alert(`Failed to trigger ${command.name}: ${error.response?.data?.error || error.message}`);
+            alert(`Failed to trigger ${command.name}: ${error.response?.data?.error || error.message}`); // Show error message
         }
-        setMenuAnchor(null);
+        setMenuAnchor(null); // Close the menu after triggering
     };
 
     return ( 
@@ -49,7 +51,7 @@ const SimulationCommands = () => {
             <Fab
                 color="primary"
                 aria-label="simulate network commands"
-                onClick={handleButtomClick}
+                onClick={handleButtomClick} // Open menu on button click
                 sx={{
                     "&:focus": {
                         outline: "none",
@@ -57,12 +59,12 @@ const SimulationCommands = () => {
                     },
                 }}
             >
-                <PlayArrowIcon />
+                <PlayArrowIcon /> {/*Play icon for the button*/}
             </Fab>
             <Menu
                 anchorEl={menuAnchor}
-                open={Boolean(menuAnchor)}
-                onClose={handleCloseMenu}
+                open={Boolean(menuAnchor)} // Show meny if anchor is set
+                onClose={handleCloseMenu} // Close menu on click outside 
                 disablePortal
                 disableScrollLock
                 slotProps={{
@@ -75,7 +77,7 @@ const SimulationCommands = () => {
                 }}
             >
                 {commands.map((command, index) => (
-                    <MenuItem key={index} onClick={() => handleCommandTrigger(command)}>
+                    <MenuItem key={index} onClick={() => handleCommandTrigger(command)}> {/*Trigger command on click*/}
                         <Typography variant="body1">{command.name}</Typography>
                     </MenuItem>
                 ))}

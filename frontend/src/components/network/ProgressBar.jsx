@@ -2,10 +2,12 @@ import { Box, Typography } from "@mui/material";
 import React, { useState } from "react"; 
 import ContextMenu from "../common/ContextMenu";
 
+// ProgressBar component shows installed functions on a node and provides context menu options.
 const ProgressBar = ({ functionsInstalled, onRemoveFunction }) => {
     const [contextMenuPosition, setContextMenuPosition] = useState(null);
     const [selectedSlot, setSelectedSlot] = useState(null);
 
+    // Handle right-click to show context menu for a specific slot.
     const handleContextMenu = (event, idx) => {
         event.preventDefault();
         setSelectedSlot(idx);
@@ -15,11 +17,13 @@ const ProgressBar = ({ functionsInstalled, onRemoveFunction }) => {
         });
     };
 
+    // Close the context menu.
     const handleCloseContextMenu = () => {
         setContextMenuPosition(null);
         setSelectedSlot(null);
     };
 
+    // Handle function removal from a slot.
     const handleRemoveFunction = () => {
         if (selectedSlot !== null && onRemoveFunction) {
             onRemoveFunction(selectedSlot);

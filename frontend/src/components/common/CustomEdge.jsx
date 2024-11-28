@@ -1,4 +1,4 @@
-// CustomEdge.jsx
+// This component defined a custom edge style for react flow network topology
 import React from "react";
 import { getBezierPath, getEdgeCenter } from "@xyflow/react";
 
@@ -13,7 +13,7 @@ const CustomEdge = ({
     style = {},
     markerEnd,
     label,
-    onEdgeClick, // Custom prop for handling clicks
+    onEdgeClick, 
 }) => {
     const edgePath = getBezierPath({
         sourceX,
@@ -22,18 +22,24 @@ const CustomEdge = ({
         targetY,
         sourcePosition,
         targetPosition,
-    });
+    }); // Generate bezier path for edge
 
     const [edgeCenterX, edgeCenterY] = getEdgeCenter({
         sourceX,
         sourceY,
         targetX,
         targetY,
-    });
+    }); // Calculate the center of the edge
 
     return (
         <>
-            <path id={id} style={style} className="react-flow__edge-path" d={edgePath} markerEnd={markerEnd} />
+            <path 
+                id={id} 
+                style={style} 
+                className="react-flow__edge-path" 
+                d={edgePath} // Draw the edge using the generated bezier path
+                markerEnd={markerEnd} 
+            />
             {label && (
                 <text
                 x={edgeCenterX}
@@ -42,8 +48,8 @@ const CustomEdge = ({
                 dominantBaseline="central"
                 style={{ fill: '#000', fontSize: 12 }}
                 onClick={(event) => {
-                    event.stopPropagation();
-                    if (data && data.onClick) data.onClick();
+                    event.stopPropagation(); // Prevent click events from propagating
+                    if (data && data.onClick) data.onClick(); // Trigger custom edge click logic
                 }}
                 >
                 {label}
@@ -64,7 +70,7 @@ const CustomEdge = ({
                 }}
                 onClick={(event) => {
                     event.stopPropagation();
-                    alert(`Button on edge ${id} clicked!`);
+                    alert(`Button on edge ${id} clicked!`); // Example: Display an alert on the button click (not implemented in current version of the app)
                     // Logic for running GOOSE, SV, and other scripts can be implemented here.
                 }}
                 >

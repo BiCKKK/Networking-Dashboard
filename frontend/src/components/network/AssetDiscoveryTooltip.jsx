@@ -1,11 +1,13 @@
+// Displays a tooltip with asset discovery data for a specific device, periodically updating.
 import React, { useEffect, useState } from 'react';
 import { Paper, Typography, Box } from '@mui/material';
 import axios from 'axios';
 
 const AssetDiscoveryTooltip = ({ dpid, nodeName }) => {
-    const [assetData, setAssetData] = useState([]);
+    const [assetData, setAssetData] = useState([]); // State to store fetched asset discovery data
 
     useEffect(() => {
+        // Fetch asset discovery data from the backend
         const fetchAssetData = async () => {
             try {
                 console.log(`Fetching asset discovery data for dpid: ${dpid}`)
@@ -25,12 +27,14 @@ const AssetDiscoveryTooltip = ({ dpid, nodeName }) => {
 
         fetchAssetData();
 
+        // Set up periodic fetching every 10 seconds
         const intervalId = setInterval(fetchAssetData, 10000);
 
-        return () => clearInterval(intervalId);
+        return () => clearInterval(intervalId); // Cleanup interval on component unmount
     }, [dpid]);
 
     useEffect(() => {
+        // Log updated asset data
         console.log('Updated asset data state:', assetData)
     })
 

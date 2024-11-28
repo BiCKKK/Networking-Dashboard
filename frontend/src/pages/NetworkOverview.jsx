@@ -6,6 +6,7 @@ import "@xyflow/react/dist/style.css";
 import { networkFunctions } from "../function_colours";
 import { CartesianGrid, LineChart, XAxis, YAxis, Tooltip as RechartsToolTip, Legend, Line, ResponsiveContainer } from "recharts";
 
+// Prefedined positions for devices on the network topology map
 const devicePositions = {
     'CONTROLSW': { x: 400, y: 50 },
     'CONTROL': { x: 850, y: 60 },
@@ -27,6 +28,7 @@ const devicePositions = {
     'DSS2RTU': { x: 1050, y: 500 },
 };
 
+// Predefined images for devices on the network topology map
 const deviceImages = {
     'CONTROLSW': '/images/control-sw.png',
     'CONTROL': '/images/control-scada.png',
@@ -49,20 +51,21 @@ const deviceImages = {
 };
 
 const NetworkOverview = () => {
-    const [isNetworkConnected, setIsNetworkConnected] = useState(false);
-    const [nodeCount, setNodeCount] = useState(0);
-    const [activeNodeCount, setActiveNodeCount] = useState(0);
-    const [isSimulationRunning, setIsSimulationRunning] = useState(false); 
-    const [simulationStatus, setSimulationStatus] = useState(""); 
-    const [nodes, setNodes] = useState([]);
-    const [edges, setEdges] = useState([]);
+    // State variables for network and simulation status
+    const [isNetworkConnected, setIsNetworkConnected] = useState(false); // Tracks eBPF controller status
+    const [nodeCount, setNodeCount] = useState(0); // Total nodes in the network 
+    const [activeNodeCount, setActiveNodeCount] = useState(0); // Active nodes in the network
+    const [isSimulationRunning, setIsSimulationRunning] = useState(false); // Mininet simulation status
+    const [simulationStatus, setSimulationStatus] = useState(""); // Display status messages for simulation
+    const [nodes, setNodes] = useState([]); // Node data for the topology visualisation
+    const [edges, setEdges] = useState([]); // Edge data for the topology visualisation
 
-    const [selectedNode, setSelectedNode] = useState("");
+    const [selectedNode, setSelectedNode] = useState(""); // Currently selected node for traffic monitoring
     const [viewMode, setViewMode] = useState()
-    const [trafficData, setTrafficData] = useState([]);
-    const [lastUpdate, setLastUpdate] = useState(Date.now());
+    const [trafficData, setTrafficData] = useState([]); // Traffic data for the selected node
+    const [lastUpdate, setLastUpdate] = useState(Date.now()); // Timestamp for the last update of traffic data
 
-    // Function to fetch node counts
+    // Fetches node counts (total and active) from the backend
     const fetchNodeCounts = async () => {
         try {
             const response = await axios.get('http://localhost:5050/api/node_counts');
@@ -73,17 +76,20 @@ const NetworkOverview = () => {
         }
     };
 
+    // Fetches topology data (nodes and links) from the backend
     const fetchTopologyData = async () => {
         try {
             const response = await axios.get('http://localhost:5050/api/topology');
-            const devices = response.data.devices;
-            const links = response.data.links;
+            const devices = response.data.devices; // Devices data from the backend
+            const links = response.data.links; // Links data from the backend
 
+            // Map device data to ReactFlow Node format
             const mappedNodes = devices.map(device => {
                 const position = devicePositions[device.name] || { x: 0, y: 0 };
                 const image = deviceImages[device.name] || null;
                 const status = device.status;
 
+                // Map installed functions to the required format
                 const functionsInstalled = device.functions.map(func => {
                     const functionInfo = networkFunctions.find(f => f.type === func.function_name);
                     return {
@@ -94,6 +100,7 @@ const NetworkOverview = () => {
                     }
                 })
 
+                // Dynamic styles for nodes based on simulation and connection status
                 let nodeStyle = {};
                 if (!isSimulationRunning) {
                     nodeStyle = { opacity: 0.5 };
@@ -107,7 +114,7 @@ const NetworkOverview = () => {
 
                 return {
                     id: device.name,
-                    type: 'customNode',
+                    type: 'customNode', // Custom node type for enhanced visualisation
                     position: position,
                     data: {
                         label: device.name,
@@ -124,6 +131,7 @@ const NetworkOverview = () => {
                 };
             });
 
+            // Map link data to ReactFlow edge format
             const mappedEdges = links.map(link => {
                 const sourceDevice = devices.find(d => d.id.toString() === link.source_device_id.toString());
                 const targetDevice = devices.find(d => d.id.toString() === link.destination_device_id.toString());
@@ -392,6 +400,7 @@ const NetworkOverview = () => {
         }
     };
 
+    // Automatically fetch data and update the UI when simulation and network status change
     useEffect(() => {
         let intervalId;
 
@@ -408,7 +417,7 @@ const NetworkOverview = () => {
         };
     }, [isSimulationRunning, isNetworkConnected])
 
-    // Handler to toggle simulation
+    // Handler for starting/stopping simulation
     const toggleSimulation = async () => {
         if (isSimulationRunning) {
             try {
@@ -433,6 +442,7 @@ const NetworkOverview = () => {
         }
     }
 
+    // Handler for connecting/disconnecting eBPF controller
     const toggleNetworkConnection = async () => {
         if (isNetworkConnected) {
             try {
@@ -451,19 +461,25 @@ const NetworkOverview = () => {
         }
     };
 
+
+    // GRAPH COMPONENT NEEDS WORK!
+    // Colour used for the traffic graph lines
     const graphColor = "#8884d8";
 
+    // Function to fetch traffic data for the selected node
     const fetchTrafficData = async () => {
         if (!selectedNode) return;
-      
+        
         try {
+            // API call to fetch monitoring data for the selected node
             const response = await axios.get('http://localhost:5050/api/monitoring_data', {
                 params: {
-                   device_id: selectedNode,
-                   limit: 60
+                   device_id: selectedNode, //ID of the selected node
+                   limit: 60, // Fetch the latest 60 data points
                }
             });
 
+            // Format the received data into a structured suitable for the graph
             const formattedData = response.data.map(point => ({
                timestamp: new Date(point.timestamp).getTime(),
                bandwidth: point.bandwidth,
@@ -477,9 +493,11 @@ const NetworkOverview = () => {
         }
     };
 
+    // useEffect hook to periodically fetch traffic data for the selected node
     useEffect(() => {
         let intervalId;
-      
+        
+        // Fetch data only if the simulation is running, the network is connected, and a node is selected
         if (isSimulationRunning && isNetworkConnected && selectedNode) {
            fetchTrafficData();
            intervalId = setInterval(fetchTrafficData, 1000);
@@ -489,15 +507,17 @@ const NetworkOverview = () => {
                clearInterval(intervalId);
             }
         };
-    }, [isSimulationRunning, isNetworkConnected, selectedNode]);
+    }, [isSimulationRunning, isNetworkConnected, selectedNode]); // Dependencies to re-run the effect
 
+    // Filter nodes to only include switches and map them to a format suitable for dropdown options
     const nodeOptions = nodes
         .filter(node => node.data.deviceType === 'switch') 
         .map(node => ({
            value: node.data.dpid, 
            label: node.data.label
         }));
-
+    
+    // Function to install a network function on a node
     function handleFunctionInstall(nodeName, functionData, dpid) {
         axios.post('http://localhost:5050/api/install', {
             dpid: dpid,
@@ -513,6 +533,7 @@ const NetworkOverview = () => {
             });
     }
 
+    // Function to remove a network function from a node
     const handleRemoveFunction = (nodeName, slotIndex, dpid) => {
         axios.post('http://localhost:5050/api/remove', {
             dpid: dpid,
@@ -580,7 +601,7 @@ const NetworkOverview = () => {
                 </Paper>
             </Grid>
 
-            {/* Nodes Connected Box */}
+            {/* Node Count Box */}
             <Grid item xs={12} sm={2} lg={2}>
                 <Paper elevation={3} sx={{ p: 3, textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'center', minheight: '150px' }}>
                     <Typography variant="h6" sx={{ mt: -1.5 }}>Active nodes</Typography>
@@ -614,6 +635,7 @@ const NetworkOverview = () => {
             </Grid>
 
             <Grid container spacing={3} mt={0} mx={0}>
+                {/*Node selection dropdown menu*/}
                 <Grid item xs={12}>
                     <Paper elevation={3} sx={{ p: 3 }}>
                         <Grid container spacing={3}>
@@ -641,6 +663,7 @@ const NetworkOverview = () => {
                 </Grid>
 
                 <Grid  item xs={12}>
+                    {/*Network Traffic Graph*/}
                     <Paper elevation={3} sx={{ p: 3, height: "400px" }}>
                         <Typography variant="h6">Network Traffic Graph</Typography>
                         <Box

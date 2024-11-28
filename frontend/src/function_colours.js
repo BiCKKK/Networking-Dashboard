@@ -1,3 +1,4 @@
+// Define available network functions with their labels and colours
 export const networkFunctions = [ 
     { type: 'forwarding', color: 'green', label: 'Forwarding' }, 
     { type: 'mirror', color: 'blue', label: 'Mirroring' },  

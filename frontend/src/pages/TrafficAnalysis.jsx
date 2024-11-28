@@ -1,3 +1,6 @@
+// Imported to the main Network Overview page.
+// Differnet features can be spead out on new pages, for now there is an issue with network topology getting 
+// reset after page change
 import React, { useState, useEffect } from 'react';
 import { Box, Grid, Paper, Typography, MenuItem, TextField } from '@mui/material';
 import axios from 'axios';
