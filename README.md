@@ -14,6 +14,7 @@ Follow these steps to start the frontend server and interact with the dashboard:
    ```bash
    cd Networking-Dashboard/frontend
 3. Start the development server:
+   ```bash
    npm run dev
 4. Open a web browser and navigate to http://localhost:5173. You will see the Network Controller interface.
 
